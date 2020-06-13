@@ -14,7 +14,8 @@ func NewPostgresDB(key string) (*db.MaoDB, error) {
 	dbName := viper.GetString(fmt.Sprintf("%s.db_name", key))
 	port := viper.GetString(fmt.Sprintf("%s.port", key))
 	address := viper.GetString(fmt.Sprintf("%s.address", key))
-	engine, err := gorm.Open("postgres", fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s", address, port, username, dbName, password))
+	sslMode := viper.GetString(fmt.Sprintf("%s.sslmode", key))
+	engine, err := gorm.Open("postgres", fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s", address, port, username, dbName, password, sslMode))
 	if err != nil {
 		return nil, err
 	}
