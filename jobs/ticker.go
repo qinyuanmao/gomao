@@ -25,9 +25,10 @@ var (
 
 type tickerJob struct {
 	jobName    string
-	jobFunc    func()
-	ticker     *time.Ticker
+	jobFunc    func()       `json:"-"`
+	ticker     *time.Ticker `json:"-"`
 	status     jobStatus
+	LastDoAt   time.Time
 	delayCount int
 }
 
@@ -88,6 +89,7 @@ func (job *tickerJob) startJob() {
 		if job.status == running {
 			<-job.ticker.C
 			job.jobFunc()
+			job.LastDoAt = time.Now()
 			count++
 			if job.delayCount != 0 && count >= job.delayCount {
 				if count >= job.delayCount {
