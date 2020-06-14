@@ -14,14 +14,14 @@ func Error(messages ...interface{}) {
 	pc, _, line, ok := runtime.Caller(1)
 	f := runtime.FuncForPC(pc)
 	if ok && f.Name() != "runtime.goexit" {
-		color.Red.Println(getMessage("INFO", f.Name(), line, messages))
+		color.Red.Println(getMessage("ERROR", f.Name(), line, messages))
 	}
 }
 func Errorf(message string, args ...interface{}) {
 	pc, _, line, ok := runtime.Caller(1)
 	f := runtime.FuncForPC(pc)
 	if ok && f.Name() != "runtime.goexit" {
-		color.Red.Println(getMessage("INFO", f.Name(), line, fmt.Sprintf(message, args...)))
+		color.Red.Println(getMessage("ERROR", f.Name(), line, fmt.Sprintf(message, args...)))
 	}
 }
 
@@ -29,14 +29,14 @@ func Debug(messages ...interface{}) {
 	pc, _, line, ok := runtime.Caller(1)
 	f := runtime.FuncForPC(pc)
 	if ok && f.Name() != "runtime.goexit" {
-		color.Green.Println(getMessage("INFO", f.Name(), line, messages))
+		color.Green.Println(getMessage("DEBUG", f.Name(), line, messages))
 	}
 }
 func Debugf(message string, args ...interface{}) {
 	pc, _, line, ok := runtime.Caller(1)
 	f := runtime.FuncForPC(pc)
 	if ok && f.Name() != "runtime.goexit" {
-		color.Green.Println(getMessage("INFO", f.Name(), line, fmt.Sprintf(message, args...)))
+		color.Green.Println(getMessage("DEBUG", f.Name(), line, fmt.Sprintf(message, args...)))
 	}
 }
 
@@ -66,7 +66,7 @@ func Warningf(message string, args ...interface{}) {
 	pc, _, line, ok := runtime.Caller(1)
 	f := runtime.FuncForPC(pc)
 	if ok && f.Name() != "runtime.goexit" {
-		color.Yellow.Println(getMessage("INFO", f.Name(), line, fmt.Sprintf(message, args...)))
+		color.Yellow.Println(getMessage("WARNING", f.Name(), line, fmt.Sprintf(message, args...)))
 	}
 }
 

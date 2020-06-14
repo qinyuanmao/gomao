@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/go-redis/redis v6.15.8+incompatible
+	github.com/gobuffalo/logger v1.0.3 // indirect
 	github.com/gookit/color v1.2.5
 	github.com/jinzhu/gorm v1.9.12
 	github.com/micro/go-micro v1.18.0
