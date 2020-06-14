@@ -38,6 +38,8 @@ func init() {
 	finishChan = make(chan string)
 	finishAllChan = make(chan struct{})
 	finishAllChanDown = make(chan struct{})
+
+	// 这里不能用 for-select, 会导致 map 被锁，无法更新
 	go func() {
 		for job := range jobChan {
 			if _, has := jobsMap[job.jobName]; has {
