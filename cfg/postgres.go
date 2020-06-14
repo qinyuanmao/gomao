@@ -18,7 +18,7 @@ func NewPostgresDB(key string) (*db.MaoDB, error) {
 	if sslmode == "" {
 		sslmode = "disable"
 	}
-	engine, err := gorm.Open("postgres", fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s", address, port, username, dbName, password, sslmode))
+	engine, err := gorm.Open("postgres", fmt.Sprintf("host='%s' port='%s' user='%s' dbname='%s' password='%s' sslmode='%s'", address, port, username, dbName, password, sslmode))
 	if err != nil {
 		return nil, err
 	}
