@@ -34,7 +34,7 @@ func main() {
 	})
 
 	// 定时任务，永远执行
-	jobs.StartJob("test4", 2*time.Second, 0, func() {
+	jobs.StartJob("test4", 10*time.Second, 0, func() {
 		fmt.Println("test4 is running")
 	})
 

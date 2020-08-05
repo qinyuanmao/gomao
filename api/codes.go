@@ -1,0 +1,9 @@
+package api
+
+const (
+	SUCCESS = iota
+	PARAMS_NOT_FOUNT
+	PARAMS_ERROR
+	SERVER_ERROR
+	NOLOGIN
+)

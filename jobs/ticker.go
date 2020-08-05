@@ -85,20 +85,16 @@ func (job *tickerJob) startJob() {
 	}()
 	logger.Info(fmt.Sprintf("%s job is started.", job.jobName))
 	var count = 0
-	for {
-		if job.status == running {
-			<-job.ticker.C
-			job.jobFunc()
-			job.LastDoAt = time.Now()
-			count++
-			if job.delayCount != 0 && count >= job.delayCount {
-				if count >= job.delayCount {
-					stopChan <- job.jobName
-					return
-				}
+	for job.status == running {
+		<-job.ticker.C
+		job.jobFunc()
+		job.LastDoAt = time.Now()
+		count++
+		if job.delayCount != 0 && count >= job.delayCount {
+			if count >= job.delayCount {
+				stopChan <- job.jobName
+				return
 			}
-		} else {
-			return
 		}
 	}
 }
