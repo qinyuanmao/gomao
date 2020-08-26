@@ -1,6 +1,8 @@
 package api
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 type ApiHandler func(ctx *gin.Context) (httpCode, resultCode int, message string, result interface{})
 
