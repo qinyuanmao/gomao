@@ -3,24 +3,12 @@ package api
 import (
 	"fmt"
 	"net/http"
-	"runtime"
-	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/qinyuanmao/gomao/dingtalk"
 	"github.com/qinyuanmao/gomao/logger"
 	"github.com/spf13/viper"
 )
-
-var instance *dingtalk.Client
-var once sync.Once
-
-func getInstance() *dingtalk.Client {
-	once.Do(func() {
-		instance = dingtalk.NewClient(viper.GetString("dingding_webhook"))
-	})
-	return instance
-}
 
 type ApiHandler func(ctx *gin.Context) (httpCode, resultCode int, message string, result interface{})
 
@@ -30,21 +18,17 @@ func JsonApi(handler ApiHandler) gin.HandlerFunc {
 		if httpCode != http.StatusOK && httpCode != http.StatusBadRequest {
 			logger.Error(message)
 			webhook := viper.GetString("dingding_webhook")
-			env := viper.Get("env")
-			if webhook == "" && env == "release" {
-				pc, _, line, _ := runtime.Caller(1)
-				f := runtime.FuncForPC(pc)
-				getInstance().Notify(&dingtalk.DingTalkMsg{
-					MsgType: "监控报警",
+			env := viper.GetString("env")
+			if webhook != "" && env == "release" {
+				dingtalk.GetInstance().Notify(&dingtalk.DingTalkMsg{
+					MsgType: "markdown",
 					Markdown: dingtalk.Markdown{
-						Title: fmt.Sprintf("接口请求异常: %d", httpCode),
-						Text:  fmt.Sprintf("%s:%d", message, f, line),
-					},
-					Text: dingtalk.Text{
-						Content: fmt.Sprintf("错误信息: %s", message),
+						Title: "监控报警",
+						Text:  fmt.Sprintf("## [%s] 接口请求异常: %d\n\n > 错误信息: %s", ctx.Request.URL, httpCode, message),
 					},
 					At: dingtalk.At{
 						AtMobiles: []string{"18583872978"},
+						IsAtAll:   false,
 					},
 				})
 			}

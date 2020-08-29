@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/qinyuanmao/gomao/logger"
+	"github.com/spf13/viper"
 )
 
 type Client struct {
@@ -37,7 +39,17 @@ type At struct {
 	IsAtAll   bool     `json:"isAtAll"`
 }
 
-func NewClient(webhook string) *Client {
+var instance *Client
+var once sync.Once
+
+func GetInstance() *Client {
+	once.Do(func() {
+		instance = newClient(viper.GetString("dingding_webhook"))
+	})
+	return instance
+}
+
+func newClient(webhook string) *Client {
 	c := &Client{
 		webhook:    webhook,
 		httpClient: &http.Client{Timeout: 30 * time.Second},
