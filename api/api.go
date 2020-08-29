@@ -17,7 +17,7 @@ var once sync.Once
 
 func getInstance() *dingtalk.Client {
 	once.Do(func() {
-		instance = dingtalk.NewClient(viper.Get("dingding_webhook"))
+		instance = dingtalk.NewClient(viper.GetString("dingding_webhook"))
 	})
 	return instance
 }
@@ -29,7 +29,7 @@ func JsonApi(handler ApiHandler) gin.HandlerFunc {
 		httpCode, resultCode, message, result := handler(ctx)
 		if httpCode != http.StatusOK && httpCode != http.StatusBadRequest {
 			logger.Error(message)
-			webhook := viper.Get("dingding_webhook")
+			webhook := viper.GetString("dingding_webhook")
 			env := viper.Get("env")
 			if webhook == "" && env == "release" {
 				pc, _, line, _ := runtime.Caller(1)
