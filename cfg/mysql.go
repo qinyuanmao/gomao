@@ -3,9 +3,10 @@ package cfg
 import (
 	"fmt"
 
-	"github.com/jinzhu/gorm"
 	"github.com/qinyuanmao/gomao/db"
 	"github.com/spf13/viper"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 func NewMysqlDB(key string) (*db.MaoDB, error) {
@@ -13,10 +14,13 @@ func NewMysqlDB(key string) (*db.MaoDB, error) {
 	password := viper.GetString(fmt.Sprintf("%s.password", key))
 	dbName := viper.GetString(fmt.Sprintf("%s.db_name", key))
 	address := viper.GetString(fmt.Sprintf("%s.address", key))
-	engine, err := gorm.Open("mysql", fmt.Sprintf("%s:%s@%s/%s?charset=utf8&parseTime=True&loc=Local", username, password, address, dbName))
+	dsn := fmt.Sprintf("%s:%s@%s/%s?charset=utf8&parseTime=True&loc=Local", username, password, address, dbName)
+	engine, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
-	engine.LogMode(viper.GetBool(fmt.Sprintf("%s.log_mode", key)))
+	if viper.GetBool(fmt.Sprintf("%s.log_mode", key)) {
+		engine = engine.Debug()
+	}
 	return &db.MaoDB{db.Mysql, engine}, nil
 }

@@ -3,9 +3,10 @@ package cfg
 import (
 	"fmt"
 
-	"github.com/jinzhu/gorm"
 	"github.com/qinyuanmao/gomao/db"
 	"github.com/spf13/viper"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func NewPostgresDB(key string) (*db.MaoDB, error) {
@@ -18,10 +19,14 @@ func NewPostgresDB(key string) (*db.MaoDB, error) {
 	if sslmode == "" {
 		sslmode = "disable"
 	}
-	engine, err := gorm.Open("postgres", fmt.Sprintf("host='%s' port='%s' user='%s' dbname='%s' password='%s' sslmode='%s'", address, port, username, dbName, password, sslmode))
+
+	dsn := fmt.Sprintf("host='%s' port='%s' user='%s' dbname='%s' password='%s' sslmode='%s'", address, port, username, dbName, password, sslmode)
+	engine, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
-	engine.LogMode(viper.GetBool(fmt.Sprintf("%s.log_mode", key)))
+	if viper.GetBool(fmt.Sprintf("%s.log_mode", key)) {
+		engine = engine.Debug()
+	}
 	return &db.MaoDB{db.Postgres, engine}, nil
 }

@@ -3,8 +3,7 @@ package db
 import (
 	"context"
 
-	"github.com/jinzhu/gorm"
-	otgorm "github.com/smacker/opentracing-gorm"
+	"gorm.io/gorm"
 )
 
 type databaseType string
@@ -20,8 +19,6 @@ type MaoDB struct {
 }
 
 func (m *MaoDB) WithContext(ctx context.Context) *gorm.DB {
-	d := otgorm.SetSpanToGorm(ctx, m.DB)
+	d := m.DB.WithContext(ctx)
 	return d
 }
-
-// TODO  添加通用查询方法

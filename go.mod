@@ -17,6 +17,10 @@ require (
 	github.com/snluu/uuid v0.0.0-20130306162636-1dd34a9ad6c0 // indirect
 	github.com/spf13/viper v1.7.0
 	github.com/thoas/go-funk v0.6.0
+	github.com/xlstudio/wxbizdatacrypt v1.0.2
 	google.golang.org/appengine v1.6.1
 	gopkg.in/yaml.v2 v2.3.0
+	gorm.io/driver/mysql v1.0.1
+	gorm.io/driver/postgres v1.0.0
+	gorm.io/gorm v1.20.0
 )
