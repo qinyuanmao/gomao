@@ -20,3 +20,7 @@ func WithParamError(paramName, errorMessage string) (httpCode, resultCode int, m
 func WithLogout() (httpCode, resultCode int, message string, result interface{}) {
 	return http.StatusUnauthorized, NOLOGIN, fmt.Sprintf("You are logout."), nil
 }
+
+func WithServerError(err error) (httpCode, resultCode int, message string, result interface{}) {
+	return http.StatusInternalServerError, SERVER_ERROR, err.Error(), nil
+}
