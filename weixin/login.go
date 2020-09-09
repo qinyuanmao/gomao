@@ -6,9 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-
-	"github.com/qinyuanmao/gomao/logger"
-	"github.com/xlstudio/wxbizdatacrypt"
 )
 
 type WeixinPerson struct {
@@ -19,14 +16,9 @@ type WeixinPerson struct {
 	ErrMsg     string `json:"errMsg"`      //错误信息
 }
 
-type WxConf struct {
-	AppID     string
-	AppSecret string
-}
-
-func (conf *WxConf) Login(code string) (weixinPerson WeixinPerson, err error) {
+func Login(appID, appSecret, code string) (weixinPerson WeixinPerson, err error) {
 	url := "https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code"
-	resp, err := http.Get(fmt.Sprintf(url, conf.AppID, conf.AppSecret, code))
+	resp, err := http.Get(fmt.Sprintf(url, appID, appSecret, code))
 	if err != nil {
 		return
 	}
@@ -41,16 +33,4 @@ func (conf *WxConf) Login(code string) (weixinPerson WeixinPerson, err error) {
 		return weixinPerson, errors.New(fmt.Sprintf("code: %d, errmsg: %s", weixinPerson.Errcode, weixinPerson.ErrMsg))
 	}
 	return
-}
-
-func (conf *WxConf) DecryptWXOpenData(sessionKey, encryptData, iv string) (string, error) {
-	pc := wxbizdatacrypt.WxBizDataCrypt{AppId: conf.AppID, SessionKey: sessionKey}
-	result, err := pc.Decrypt(encryptData, iv, true)
-	if err != nil {
-		logger.Error(err.Error())
-		return "", err
-	} else {
-		decodeStr := result.(string)
-		return decodeStr, nil
-	}
 }
