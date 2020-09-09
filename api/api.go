@@ -33,10 +33,13 @@ func JsonApi(handler ApiHandler) gin.HandlerFunc {
 				})
 			}
 		}
-		ctx.JSON(httpCode, map[string]interface{}{
+		response := map[string]interface{}{
 			"code":    resultCode,
 			"message": message,
-			"result":  result,
-		})
+		}
+		if result != nil {
+			response["result"] = result
+		}
+		ctx.JSON(httpCode, response)
 	}
 }
