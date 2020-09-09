@@ -1,8 +1,6 @@
 package db
 
 import (
-	"context"
-
 	"gorm.io/gorm"
 )
 
@@ -16,9 +14,4 @@ const (
 type MaoDB struct {
 	DatabaseType databaseType
 	*gorm.DB
-}
-
-func (m *MaoDB) WithContext(ctx context.Context) *gorm.DB {
-	d := m.DB.WithContext(ctx)
-	return d
 }
