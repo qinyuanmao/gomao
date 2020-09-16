@@ -17,7 +17,7 @@ type WeixinWebPerson struct {
 	ErrMsg       string `json:"errMsg"`  //错误信息
 }
 
-func WebLogin(appID, appSecret, code, refreshToken string) (person WeixinWebPerson, err error) {
+func WebLogin(appID, appSecret, code string) (person WeixinWebPerson, err error) {
 	url := "https://api.weixin.qq.com/sns/oauth2/access_token?appid=%s&secret=%s&code=%s&grant_type=authorization_code"
 	resp, err := http.Get(fmt.Sprintf(url, appID, appSecret, code))
 	if err != nil {
@@ -63,9 +63,9 @@ type WeixinWebUser struct {
 	ErrMsg     string   `json:"errMsg"`  //错误信息
 }
 
-func GetWebUserInfo(openID, accessToken string) (user WeixinWebUser, err error) {
+func (person *WeixinWebPerson) GetWebUserInfo() (user WeixinWebUser, err error) {
 	url := "https://api.weixin.qq.com/sns/userinfo?access_token=%s&openid=%s&lang=zh_CN"
-	resp, err := http.Get(fmt.Sprintf(url, accessToken, openID))
+	resp, err := http.Get(fmt.Sprintf(url, person.AccessToken, person.OpenID))
 	if err != nil {
 		return
 	}
