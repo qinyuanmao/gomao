@@ -78,3 +78,26 @@ func (person *WeixinWebPerson) GetWebUserInfo() (user WeixinWebUser, err error) 
 	}
 	return
 }
+
+type Ticket struct {
+	Ticket    string `json:"ticket"`
+	ExpiresIn int    `json:"expires_in"`
+	Errcode   int    `json:"errcode"` //错误码
+	ErrMsg    string `json:"errMsg"`  //错误信息
+}
+
+func (person *WeixinWebPerson) GetTicket() (ticket Ticket, err error) {
+	url := "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=ACCESS_TOKEN&type=wx_card"
+	resp, err := http.Get(fmt.Sprintf(url, person.AccessToken))
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	err = json.Unmarshal(body, &ticket)
+	if err != nil {
+		return
+	}
+	return
+}
