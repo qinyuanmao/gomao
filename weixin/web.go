@@ -7,7 +7,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
+
+	"github.com/qinyuanmao/gomao/dingtalk"
+	"github.com/qinyuanmao/gomao/logger"
+	"github.com/spf13/viper"
 )
 
 type WeixinWebPerson struct {
@@ -89,9 +94,60 @@ type Ticket struct {
 	ErrMsg    string `json:"errMsg"`  //错误信息
 }
 
-func GetTicket(accessToken string) (ticket Ticket, err error) {
+func GetSignature(nonceStr, url, ticket string) (timestamp int64, signature string) {
+	timestamp = time.Now().Unix()
+	signature = fmt.Sprintf("jsapi_ticket=%s&noncestr=%s&timestamp=%d&url=%s", ticket, nonceStr, timestamp, url)
+	h := sha1.New()
+	h.Write([]byte(signature))
+	bs := h.Sum(nil)
+	signature = strings.ToLower(string(bs))
+	return
+}
+
+type ServerToken struct {
+	AccessToken string `json:"access_token"`
+	ExpiresIn   int    `json:"expires_in"`
+	Errcode     int    `json:"errcode"` //错误码
+	ErrMsg      string `json:"errMsg"`  //错误信息
+}
+
+var mServerToken *ServerToken
+var once sync.Once
+
+func GetServerTokenInstance() *ServerToken {
+	if mServerToken == nil {
+		once.Do(func() {
+			mServerToken = GetServerToken(viper.GetString("weixin.app_id"), viper.GetString("weixin.app_secret"))
+		})
+	}
+	return mServerToken
+}
+
+func GetServerToken(appID, appSecret string) (serverToken *ServerToken) {
+	serverToken = &ServerToken{}
+	url := "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s"
+	resp, err := http.Get(fmt.Sprintf(url, appID, appSecret))
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		sendError(err)
+		return
+	}
+	err = json.Unmarshal(body, serverToken)
+	if err != nil {
+		sendError(err)
+		return
+	}
+	return
+}
+
+func (st *ServerToken) GetTicket() (ticket Ticket, err error) {
 	url := "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=ACCESS_TOKEN&type=wx_card"
-	resp, err := http.Get(fmt.Sprintf(url, accessToken))
+	resp, err := http.Get(fmt.Sprintf(url, st.AccessToken))
 	if err != nil {
 		return
 	}
@@ -105,12 +161,22 @@ func GetTicket(accessToken string) (ticket Ticket, err error) {
 	return
 }
 
-func GetSignature(nonceStr, url, ticket string) (timestamp int64, signature string) {
-	timestamp = time.Now().Unix()
-	signature = fmt.Sprintf("jsapi_ticket=%s&noncestr=%s&timestamp=%d&url=%s", ticket, nonceStr, timestamp, url)
-	h := sha1.New()
-	h.Write([]byte(signature))
-	bs := h.Sum(nil)
-	signature = strings.ToLower(string(bs))
-	return
+func sendError(err error) {
+	once = sync.Once{}
+	logger.Error(err.Error())
+	webhook := viper.GetString("dingding_webhook")
+	env := viper.GetString("env")
+	if webhook != "" {
+		dingtalk.GetInstance().Notify(&dingtalk.DingTalkMsg{
+			MsgType: "markdown",
+			Markdown: dingtalk.Markdown{
+				Title: "监控报警",
+				Text:  fmt.Sprintf("## [%s] 请求微信  AccessToken 失败: %s", env, err.Error()),
+			},
+			At: dingtalk.At{
+				AtMobiles: []string{"18583872978"},
+				IsAtAll:   false,
+			},
+		})
+	}
 }

@@ -19,12 +19,12 @@ func JsonApi(handler ApiHandler) gin.HandlerFunc {
 			logger.Error(message)
 			webhook := viper.GetString("dingding_webhook")
 			env := viper.GetString("env")
-			if webhook != "" && env == "release" {
+			if webhook != "" {
 				dingtalk.GetInstance().Notify(&dingtalk.DingTalkMsg{
 					MsgType: "markdown",
 					Markdown: dingtalk.Markdown{
 						Title: "监控报警",
-						Text:  fmt.Sprintf("## [%s] 接口请求异常: %d\n\n > 错误信息: %s", ctx.Request.URL, httpCode, message),
+						Text:  fmt.Sprintf("## 【%s】[%s] 接口请求异常: %d\n\n > 错误信息: %s", env, ctx.Request.URL, httpCode, message),
 					},
 					At: dingtalk.At{
 						AtMobiles: []string{"18583872978"},
