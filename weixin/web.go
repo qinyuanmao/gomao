@@ -124,8 +124,8 @@ func getServerToken(appID, appSecret string) (serverToken *ServerToken) {
 		return
 	}
 	err = json.Unmarshal(body, serverToken)
-	if err != nil {
-		sendError(fmt.Sprintf(url, appID, appSecret), err)
+	if err != nil || serverToken.Errcode != 0 {
+		sendError(fmt.Sprintf(url, appID, appSecret), fmt.Errorf("code: %d, message: %s", serverToken.Errcode, serverToken.ErrMsg))
 		return
 	}
 	serverToken.ExpiresAt = time.Now().Unix() + int64(serverToken.ExpiresIn)
@@ -141,6 +141,9 @@ func (st *ServerToken) GetTicket() (ticket Ticket, err error) {
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
 	err = json.Unmarshal(body, &ticket)
 	if err != nil {
 		return
