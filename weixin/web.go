@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
@@ -101,18 +100,18 @@ var once sync.Once
 func GetServerTokenInstance() *ServerToken {
 	if mServerToken == nil {
 		once.Do(func() {
-			mServerToken = getServerToken(viper.GetString("weixin.app_id"), viper.GetString("weixin.app_secret"))
+			mServerToken = getServerToken()
 		})
 	} else if mServerToken.ExpiresAt < time.Now().Unix()-20 {
-		mServerToken = getServerToken(viper.GetString("weixin.app_id"), viper.GetString("weixin.app_secret"))
+		mServerToken = getServerToken()
 	}
 	return mServerToken
 }
 
-func getServerToken(appID, appSecret string) (serverToken *ServerToken) {
+func getServerToken() (serverToken *ServerToken) {
 	serverToken = &ServerToken{}
 	url := "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s"
-	resp, err := http.Get(fmt.Sprintf(url, appID, appSecret))
+	resp, err := http.Get(fmt.Sprintf(url, viper.GetString("weixin.app_id"), viper.GetString("weixin.app_secret")))
 	if err != nil {
 		return
 	}
@@ -120,12 +119,12 @@ func getServerToken(appID, appSecret string) (serverToken *ServerToken) {
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		sendError(fmt.Sprintf(url, appID, appSecret), err)
+		sendError(fmt.Sprintf(url, viper.GetString("weixin.app_id"), viper.GetString("weixin.app_secret")), err)
 		return
 	}
 	err = json.Unmarshal(body, serverToken)
 	if err != nil || serverToken.Errcode != 0 {
-		sendError(fmt.Sprintf(url, appID, appSecret), fmt.Errorf("code: %d, message: %s", serverToken.Errcode, serverToken.ErrMsg))
+		sendError(fmt.Sprintf(url, viper.GetString("weixin.app_id"), viper.GetString("weixin.app_secret")), fmt.Errorf("code: %d, message: %s", serverToken.Errcode, serverToken.ErrMsg))
 		return
 	}
 	serverToken.ExpiresAt = time.Now().Unix() + int64(serverToken.ExpiresIn)
@@ -164,7 +163,7 @@ func GetSignature(nonceStr, url, ticket string) (timestamp int64, signature stri
 	h := sha1.New()
 	h.Write([]byte(signature))
 	bs := h.Sum(nil)
-	signature = strings.ToLower(string(bs))
+	signature = fmt.Sprintf("%x", bs)
 	return
 }
 

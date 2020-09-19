@@ -15,7 +15,7 @@ type ApiHandler func(ctx *gin.Context) (httpCode, resultCode int, message string
 func JsonApi(handler ApiHandler) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		httpCode, resultCode, message, result := handler(ctx)
-		if httpCode != http.StatusOK && httpCode != http.StatusBadRequest {
+		if httpCode != http.StatusOK {
 			logger.Error(message)
 			webhook := viper.GetString("dingding_webhook")
 			env := viper.GetString("env")
