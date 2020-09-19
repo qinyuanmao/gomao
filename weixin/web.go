@@ -105,9 +105,9 @@ func GetTicket(accessToken string) (ticket Ticket, err error) {
 	return
 }
 
-func (t Ticket) GetSignature(nonceStr, url string) (timestamp int64, signature string) {
+func GetSignature(nonceStr, url, ticket string) (timestamp int64, signature string) {
 	timestamp = time.Now().Unix()
-	signature = fmt.Sprintf("jsapi_ticket=%s&noncestr=%s&timestamp=%d&url=%s", t.Ticket, nonceStr, timestamp, url)
+	signature = fmt.Sprintf("jsapi_ticket=%s&noncestr=%s&timestamp=%d&url=%s", ticket, nonceStr, timestamp, url)
 	h := sha1.New()
 	h.Write([]byte(signature))
 	bs := h.Sum(nil)
