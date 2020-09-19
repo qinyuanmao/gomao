@@ -66,9 +66,9 @@ type WeixinWebUser struct {
 	ErrMsg     string   `json:"errMsg"`  //错误信息
 }
 
-func (person *WeixinWebPerson) GetWebUserInfo() (user WeixinWebUser, err error) {
+func GetWebUserInfo(accessToken, openID string) (user WeixinWebUser, err error) {
 	url := "https://api.weixin.qq.com/sns/userinfo?access_token=%s&openid=%s&lang=zh_CN"
-	resp, err := http.Get(fmt.Sprintf(url, person.AccessToken, person.OpenID))
+	resp, err := http.Get(fmt.Sprintf(url, accessToken, openID))
 	if err != nil {
 		return
 	}
@@ -89,9 +89,9 @@ type Ticket struct {
 	ErrMsg    string `json:"errMsg"`  //错误信息
 }
 
-func (person *WeixinWebPerson) GetTicket() (ticket Ticket, err error) {
+func GetTicket(accessToken string) (ticket Ticket, err error) {
 	url := "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=ACCESS_TOKEN&type=wx_card"
-	resp, err := http.Get(fmt.Sprintf(url, person.AccessToken))
+	resp, err := http.Get(fmt.Sprintf(url, accessToken))
 	if err != nil {
 		return
 	}
