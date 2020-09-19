@@ -25,9 +25,9 @@ type WeixinWebPerson struct {
 	ErrMsg       string `json:"errMsg"`  //错误信息
 }
 
-func WebLogin(appID, appSecret, code string) (person WeixinWebPerson, err error) {
+func WebLogin(code string) (person WeixinWebPerson, err error) {
 	url := "https://api.weixin.qq.com/sns/oauth2/access_token?appid=%s&secret=%s&code=%s&grant_type=authorization_code"
-	resp, err := http.Get(fmt.Sprintf(url, appID, appSecret, code))
+	resp, err := http.Get(fmt.Sprintf(url, viper.GetString("weixin.app_id"), viper.GetString("weixin.app_secret"), code))
 	if err != nil {
 		return
 	}
@@ -41,9 +41,9 @@ func WebLogin(appID, appSecret, code string) (person WeixinWebPerson, err error)
 	return
 }
 
-func RefreshWebToken(appID, refreshToken string) (person WeixinWebPerson, err error) {
+func RefreshWebToken(refreshToken string) (person WeixinWebPerson, err error) {
 	url := "https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=%s&grant_type=refresh_token&refresh_token=%s"
-	resp, err := http.Get(fmt.Sprintf(url, appID, refreshToken))
+	resp, err := http.Get(fmt.Sprintf(url, viper.GetString("weixin.app_id"), refreshToken))
 	if err != nil {
 		return
 	}
@@ -71,9 +71,9 @@ type WeixinWebUser struct {
 	ErrMsg     string   `json:"errMsg"`  //错误信息
 }
 
-func GetWebUserInfo(accessToken, openID string) (user WeixinWebUser, err error) {
+func GetWebUserInfo(accessToken string) (user WeixinWebUser, err error) {
 	url := "https://api.weixin.qq.com/sns/userinfo?access_token=%s&openid=%s&lang=zh_CN"
-	resp, err := http.Get(fmt.Sprintf(url, accessToken, openID))
+	resp, err := http.Get(fmt.Sprintf(url, accessToken, viper.GetString("weixin.app_id")))
 	if err != nil {
 		return
 	}
@@ -81,6 +81,67 @@ func GetWebUserInfo(accessToken, openID string) (user WeixinWebUser, err error) 
 
 	body, err := ioutil.ReadAll(resp.Body)
 	err = json.Unmarshal(body, &user)
+	if err != nil {
+		return
+	}
+	return
+}
+
+type ServerToken struct {
+	AccessToken string `json:"access_token"`
+	ExpiresIn   int    `json:"expires_in"`
+	ExpiresAt   int64  `json:"expires_at"`
+	Errcode     int    `json:"errcode"` //错误码
+	ErrMsg      string `json:"errMsg"`  //错误信息
+}
+
+var mServerToken *ServerToken
+var once sync.Once
+
+func GetServerTokenInstance() *ServerToken {
+	if mServerToken == nil {
+		once.Do(func() {
+			mServerToken = getServerToken(viper.GetString("weixin.app_id"), viper.GetString("weixin.app_secret"))
+		})
+	} else if mServerToken.ExpiresAt < time.Now().Unix()-20 {
+		mServerToken = getServerToken(viper.GetString("weixin.app_id"), viper.GetString("weixin.app_secret"))
+	}
+	return mServerToken
+}
+
+func getServerToken(appID, appSecret string) (serverToken *ServerToken) {
+	serverToken = &ServerToken{}
+	url := "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s"
+	resp, err := http.Get(fmt.Sprintf(url, appID, appSecret))
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		sendError(fmt.Sprintf(url, appID, appSecret), err)
+		return
+	}
+	err = json.Unmarshal(body, serverToken)
+	if err != nil {
+		sendError(fmt.Sprintf(url, appID, appSecret), err)
+		return
+	}
+	serverToken.ExpiresAt = time.Now().Unix() + int64(serverToken.ExpiresIn)
+	return
+}
+
+func (st *ServerToken) GetTicket() (ticket Ticket, err error) {
+	url := "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=ACCESS_TOKEN&type=wx_card"
+	resp, err := http.Get(fmt.Sprintf(url, st.AccessToken))
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	err = json.Unmarshal(body, &ticket)
 	if err != nil {
 		return
 	}
@@ -104,64 +165,7 @@ func GetSignature(nonceStr, url, ticket string) (timestamp int64, signature stri
 	return
 }
 
-type ServerToken struct {
-	AccessToken string `json:"access_token"`
-	ExpiresIn   int    `json:"expires_in"`
-	Errcode     int    `json:"errcode"` //错误码
-	ErrMsg      string `json:"errMsg"`  //错误信息
-}
-
-var mServerToken *ServerToken
-var once sync.Once
-
-func GetServerTokenInstance() *ServerToken {
-	if mServerToken == nil {
-		once.Do(func() {
-			mServerToken = GetServerToken(viper.GetString("weixin.app_id"), viper.GetString("weixin.app_secret"))
-		})
-	}
-	return mServerToken
-}
-
-func GetServerToken(appID, appSecret string) (serverToken *ServerToken) {
-	serverToken = &ServerToken{}
-	url := "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s"
-	resp, err := http.Get(fmt.Sprintf(url, appID, appSecret))
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		sendError(err)
-		return
-	}
-	err = json.Unmarshal(body, serverToken)
-	if err != nil {
-		sendError(err)
-		return
-	}
-	return
-}
-
-func (st *ServerToken) GetTicket() (ticket Ticket, err error) {
-	url := "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=ACCESS_TOKEN&type=wx_card"
-	resp, err := http.Get(fmt.Sprintf(url, st.AccessToken))
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	err = json.Unmarshal(body, &ticket)
-	if err != nil {
-		return
-	}
-	return
-}
-
-func sendError(err error) {
+func sendError(url string, err error) {
 	once = sync.Once{}
 	logger.Error(err.Error())
 	webhook := viper.GetString("dingding_webhook")
@@ -171,7 +175,7 @@ func sendError(err error) {
 			MsgType: "markdown",
 			Markdown: dingtalk.Markdown{
 				Title: "监控报警",
-				Text:  fmt.Sprintf("## [%s] 请求微信  AccessToken 失败: %s", env, err.Error()),
+				Text:  fmt.Sprintf("## 【%s】 请求微信接口失败:\n\n > 请求地址: %s \n\n > 失败原因: %s", env, url, err.Error()),
 			},
 			At: dingtalk.At{
 				AtMobiles: []string{"18583872978"},
