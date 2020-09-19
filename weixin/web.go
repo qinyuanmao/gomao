@@ -1,10 +1,13 @@
 package weixin
 
 import (
+	"crypto/sha1"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
+	"time"
 )
 
 type WeixinWebPerson struct {
@@ -99,5 +102,15 @@ func (person *WeixinWebPerson) GetTicket() (ticket Ticket, err error) {
 	if err != nil {
 		return
 	}
+	return
+}
+
+func (t Ticket) GetSignature(nonceStr, url string) (timestamp int64, signature string) {
+	timestamp = time.Now().Unix()
+	signature = fmt.Sprintf("jsapi_ticket=%s&noncestr=%s&timestamp=%d&url=%s", t.Ticket, nonceStr, timestamp, url)
+	h := sha1.New()
+	h.Write([]byte(signature))
+	bs := h.Sum(nil)
+	signature = strings.ToLower(string(bs))
 	return
 }
