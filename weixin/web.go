@@ -71,9 +71,9 @@ type WeixinWebUser struct {
 	ErrMsg     string   `json:"errMsg"`  //错误信息
 }
 
-func GetWebUserInfo(accessToken string) (user WeixinWebUser, err error) {
+func GetWebUserInfo(accessToken string, openID string) (user WeixinWebUser, err error) {
 	url := "https://api.weixin.qq.com/sns/userinfo?access_token=%s&openid=%s&lang=zh_CN"
-	resp, err := http.Get(fmt.Sprintf(url, accessToken, viper.GetString("weixin.app_id")))
+	resp, err := http.Get(fmt.Sprintf(url, accessToken, openID))
 	if err != nil {
 		return
 	}
