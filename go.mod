@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-redis/redis v6.15.8+incompatible
+	github.com/google/uuid v1.1.1
 	github.com/gookit/color v1.2.5
 	github.com/jinzhu/gorm v1.9.16
 	github.com/magiconair/properties v1.8.1

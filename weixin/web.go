@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/qinyuanmao/gomao/dingtalk"
 	"github.com/qinyuanmao/gomao/logger"
 	"github.com/spf13/viper"
@@ -157,9 +159,10 @@ type Ticket struct {
 	ErrMsg    string `json:"errMsg"`  //错误信息
 }
 
-func GetSignature(nonceStr, url, ticket string) (timestamp int64, signature string) {
+func GetSignature(url, ticket string) (timestamp int64, noncestr, signature string) {
 	timestamp = time.Now().Unix()
-	signature = fmt.Sprintf("jsapi_ticket=%s&noncestr=%s&timestamp=%d&url=%s", ticket, nonceStr, timestamp, url)
+	noncestr = strings.ReplaceAll(uuid.New().String(), "-", "")
+	signature = fmt.Sprintf("jsapi_ticket=%s&noncestr=%s&timestamp=%d&url=%s", ticket, noncestr, timestamp, url)
 	h := sha1.New()
 	h.Write([]byte(signature))
 	bs := h.Sum(nil)
