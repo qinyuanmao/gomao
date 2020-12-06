@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -28,7 +29,7 @@ func Cors() gin.HandlerFunc {
 	}
 }
 
-func CheckOpenID(getUserByOpenID func(openID string) (interface{}, error)) gin.HandlerFunc {
+func CheckOpenID(getUserByOpenID func(context.Context, string) (interface{}, error)) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		openID := ctx.Request.Header.Get("open_id")
 		if openID == "" {
@@ -43,7 +44,7 @@ func CheckOpenID(getUserByOpenID func(openID string) (interface{}, error)) gin.H
 				ctx.Next()
 				return
 			}
-			user, err := getUserByOpenID(openID)
+			user, err := getUserByOpenID(ctx.Request.Context(), openID)
 			if err != nil {
 				ctx.Abort()
 				if gorm.IsRecordNotFoundError(err) {
