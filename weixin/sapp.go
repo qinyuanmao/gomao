@@ -2,6 +2,7 @@ package weixin
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -26,6 +27,10 @@ func Login(appID, appSecret, code string) (weixinPerson WeixinSmallAppPerson, er
 	body, err := ioutil.ReadAll(resp.Body)
 	err = json.Unmarshal(body, &weixinPerson)
 	if err != nil {
+		return
+	}
+	if weixinPerson.Errcode != 0 {
+		err = errors.New(weixinPerson.ErrMsg)
 		return
 	}
 	return
