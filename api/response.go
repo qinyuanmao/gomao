@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func SuccessResponse(response interface{}) (httpCode, resultCode int, message string, result interface{}) {
+func SuccessResponse(response ...interface{}) (httpCode, resultCode int, message string, result interface{}) {
 	return http.StatusOK, SUCCESS, "Success", response
 }
 
