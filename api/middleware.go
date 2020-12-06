@@ -8,7 +8,10 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-const GIN_USER_KEY = "GIN_USER_KEY"
+const (
+	GIN_USER_KEY    = "GIN_USER_KEY"
+	GET_OPEN_ID_KEY = "GIN_OPEN_ID_KEY"
+)
 
 func Cors() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
@@ -38,31 +41,31 @@ func CheckOpenID(getUserByOpenID func(context.Context, string) (interface{}, err
 				"code":    NOLOGIN,
 				"message": "You are logout.",
 			})
-		} else {
-			if getUserByOpenID == nil {
-				ctx.Set("open_id", openID)
-				ctx.Next()
-				return
-			}
-			user, err := getUserByOpenID(ctx.Request.Context(), openID)
-			if err != nil {
-				ctx.Abort()
-				if gorm.IsRecordNotFoundError(err) {
-					ctx.JSON(http.StatusUnauthorized, map[string]interface{}{
-						"code":    NOLOGIN,
-						"message": "User not found.",
-					})
-				} else {
-					ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-						"code":    SERVER_ERROR,
-						"message": err.Error(),
-					})
-				}
-				return
-			}
-			ctx.Set("GIN_USER_KEY", user)
-			ctx.Set("open_id", openID)
-			ctx.Next()
+			return
 		}
+		if getUserByOpenID == nil {
+			ctx.Set(GET_OPEN_ID_KEY, openID)
+			ctx.Next()
+			return
+		}
+		user, err := getUserByOpenID(ctx.Request.Context(), openID)
+		if err != nil {
+			ctx.Abort()
+			if gorm.IsRecordNotFoundError(err) {
+				ctx.JSON(http.StatusUnauthorized, map[string]interface{}{
+					"code":    NOLOGIN,
+					"message": "User not found.",
+				})
+			} else {
+				ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
+					"code":    SERVER_ERROR,
+					"message": err.Error(),
+				})
+			}
+			return
+		}
+		ctx.Set(GIN_USER_KEY, user)
+		ctx.Set(GET_OPEN_ID_KEY, openID)
+		ctx.Next()
 	}
 }
