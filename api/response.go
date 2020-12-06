@@ -10,7 +10,7 @@ func SuccessResponse(response interface{}) (httpCode, resultCode int, message st
 }
 
 func WithParamNotFound(paramName string) (httpCode, resultCode int, message string, result interface{}) {
-	return http.StatusBadRequest, PARAMS_NOT_FOUNT, fmt.Sprintf("%s parameter not found!", paramName), nil
+	return http.StatusBadRequest, PARAMS_NOT_FOUNT, fmt.Sprintf("%s parameter is required!", paramName), nil
 }
 
 func WithParamError(paramName, errorMessage string) (httpCode, resultCode int, message string, result interface{}) {
@@ -23,4 +23,8 @@ func WithLogout() (httpCode, resultCode int, message string, result interface{})
 
 func WithServerError(err error) (httpCode, resultCode int, message string, result interface{}) {
 	return http.StatusInternalServerError, SERVER_ERROR, err.Error(), nil
+}
+
+func WithRecordNotFound() (httpCode, resultCode int, message string, result interface{}) {
+	return http.StatusNotFound, RECORD_NOT_FOUND, "Record not found.", nil
 }
