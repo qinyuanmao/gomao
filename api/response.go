@@ -28,3 +28,10 @@ func WithServerError(err error) (httpCode, resultCode int, message string, resul
 func WithRecordNotFound() (httpCode, resultCode int, message string, result interface{}) {
 	return http.StatusNotFound, RECORD_NOT_FOUND, "Record not found.", nil
 }
+
+func WithResponseError(err error, response ...interface{}) (httpCode, resultCode int, message string, result interface{}) {
+	if err != nil {
+		return WithServerError(err)
+	}
+	return SuccessResponse(response...)
+}
