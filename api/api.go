@@ -10,13 +10,13 @@ import (
 	"github.com/spf13/viper"
 )
 
-type ApiHandler func(ctx *gin.Context) (httpCode, resultCode int, message string, result interface{})
-type FileHandler func(ctx *gin.Context) (httpCode int, message string, bytes []byte, fileName, contentType string)
+type ApiHandler func(ctx *Context) (resultCode ResultCode, message string, result interface{})
+type FileHandler func(ctx *Context) (httpCode int, message string, bytes []byte, fileName, contentType string)
 
 func JsonApi(handler ApiHandler) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		httpCode, resultCode, message, result := handler(ctx)
-		sendDingTalk(ctx.Request.URL.String(), message, httpCode)
+		resultCode, message, result := handler(&Context{ctx})
+		sendDingTalk(ctx.Request.URL.String(), message, resultCode.getHttpCode())
 		response := map[string]interface{}{
 			"code":    resultCode,
 			"message": message,
@@ -24,13 +24,13 @@ func JsonApi(handler ApiHandler) gin.HandlerFunc {
 		if result != nil {
 			response["result"] = result
 		}
-		ctx.JSON(httpCode, response)
+		ctx.JSON(resultCode.getHttpCode(), response)
 	}
 }
 
 func FileApi(hander FileHandler) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		httpCode, message, bytes, fileName, contentType := hander(ctx)
+		httpCode, message, bytes, fileName, contentType := hander(&Context{ctx})
 		sendDingTalk(ctx.Request.URL.String(), message, httpCode)
 
 		if httpCode != http.StatusOK {

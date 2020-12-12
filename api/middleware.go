@@ -13,6 +13,15 @@ const (
 	GET_OPEN_ID_KEY = "GIN_OPEN_ID_KEY"
 )
 
+type Middleware func(*Context)
+
+func CreateMiddleware(middleware Middleware) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		context := &Context{ctx}
+		middleware(context)
+	}
+}
+
 func Cors() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		method := ctx.Request.Method
@@ -32,9 +41,9 @@ func Cors() gin.HandlerFunc {
 	}
 }
 
-func CheckOpenID(getUserByOpenID func(context.Context, string) (interface{}, error)) gin.HandlerFunc {
+func CheckLogin(key string, getUserByOpenID func(context.Context, string) (interface{}, error)) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		openID := ctx.Request.Header.Get("open_id")
+		openID := ctx.Request.Header.Get("key")
 		if openID == "" {
 			ctx.Abort()
 			ctx.JSON(http.StatusUnauthorized, map[string]interface{}{
