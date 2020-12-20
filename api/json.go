@@ -43,7 +43,7 @@ func (ctx *Context) GetJsonString(key string) (string, error) {
 	return value.String(), err
 }
 
-func (ctx *Context) GetJsonStringArray(key ...string) ([]string, error) {
+func (ctx *Context) GetJsonStringArray(key string) ([]string, error) {
 	body, err := ioutil.ReadAll(ctx.Request.Body)
 	if err != nil {
 		return []string{}, err
