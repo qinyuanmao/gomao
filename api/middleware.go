@@ -2,10 +2,11 @@ package api
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"orm.io/gorm"
+	"gorm.io/gorm"
 )
 
 const (
@@ -60,7 +61,7 @@ func CheckLogin(key string, getUserByOpenID func(context.Context, string) (inter
 		user, err := getUserByOpenID(ctx.Request.Context(), openID)
 		if err != nil {
 			ctx.Abort()
-			if gorm.IsRecordNotFoundError(err) {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
 				ctx.JSON(http.StatusUnauthorized, map[string]interface{}{
 					"code":    NOLOGIN,
 					"message": "User not found.",
