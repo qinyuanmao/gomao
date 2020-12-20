@@ -8,7 +8,8 @@ import (
 )
 
 func (ctx *Context) GetJsonInt(key string) (int64, error) {
-	body, err := ioutil.ReadAll(ctx.Request.Body)
+	request := ctx.Copy().Request
+	body, err := ioutil.ReadAll(request.Body)
 	if err != nil {
 		return 0, err
 	}
@@ -17,7 +18,8 @@ func (ctx *Context) GetJsonInt(key string) (int64, error) {
 }
 
 func (ctx *Context) GetJsonBool(key string) (bool, error) {
-	body, err := ioutil.ReadAll(ctx.Request.Body)
+	request := ctx.Copy().Request
+	body, err := ioutil.ReadAll(request.Body)
 	if err != nil {
 		return false, err
 	}
@@ -26,7 +28,8 @@ func (ctx *Context) GetJsonBool(key string) (bool, error) {
 }
 
 func (ctx *Context) GetJsonFloat(key string) (float64, error) {
-	body, err := ioutil.ReadAll(ctx.Request.Body)
+	request := ctx.Copy().Request
+	body, err := ioutil.ReadAll(request.Body)
 	if err != nil {
 		return 0, err
 	}
@@ -35,7 +38,8 @@ func (ctx *Context) GetJsonFloat(key string) (float64, error) {
 }
 
 func (ctx *Context) GetJsonString(key string) (string, error) {
-	body, err := ioutil.ReadAll(ctx.Request.Body)
+	request := ctx.Copy().Request
+	body, err := ioutil.ReadAll(request.Body)
 	if err != nil {
 		return "", err
 	}
@@ -44,7 +48,8 @@ func (ctx *Context) GetJsonString(key string) (string, error) {
 }
 
 func (ctx *Context) GetJsonStringArray(key string) ([]string, error) {
-	body, err := ioutil.ReadAll(ctx.Request.Body)
+	request := ctx.Copy().Request
+	body, err := ioutil.ReadAll(request.Body)
 	if err != nil {
 		return []string{}, err
 	}
@@ -55,7 +60,8 @@ func (ctx *Context) GetJsonStringArray(key string) ([]string, error) {
 }
 
 func (ctx *Context) GetJsonIntArray(key string) ([]int64, error) {
-	body, err := ioutil.ReadAll(ctx.Request.Body)
+	request := ctx.Copy().Request
+	body, err := ioutil.ReadAll(request.Body)
 	if err != nil {
 		return []int64{}, err
 	}
@@ -66,7 +72,8 @@ func (ctx *Context) GetJsonIntArray(key string) ([]int64, error) {
 }
 
 func (ctx *Context) GetJsonFloatArray(key string) ([]float64, error) {
-	body, err := ioutil.ReadAll(ctx.Request.Body)
+	request := ctx.Copy().Request
+	body, err := ioutil.ReadAll(request.Body)
 	if err != nil {
 		return []float64{}, err
 	}
@@ -77,7 +84,8 @@ func (ctx *Context) GetJsonFloatArray(key string) ([]float64, error) {
 }
 
 func (ctx *Context) GetJsonBoolArray(key string) ([]bool, error) {
-	body, err := ioutil.ReadAll(ctx.Request.Body)
+	request := ctx.Copy().Request
+	body, err := ioutil.ReadAll(request.Body)
 	if err != nil {
 		return []bool{}, err
 	}
