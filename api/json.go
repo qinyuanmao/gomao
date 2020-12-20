@@ -21,7 +21,7 @@ func (ctx *Context) GetJsonInt(key string) (int64, error) {
 func (ctx *Context) GetJsonBool(key string) (bool, error) {
 	data, err := ctx.GetRawData()
 	if err != nil {
-		return "", err
+		return false, err
 	}
 	ctx.Request.Body = ioutil.NopCloser(bytes.NewBuffer(data))
 	value := gjson.Get(string(data), key)
