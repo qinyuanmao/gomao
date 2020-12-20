@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func SuccessResponse(response ...interface{}) (code ResultCode, message string, result interface{}) {
+func SuccessResponse(response interface{}) (code ResultCode, message string, result interface{}) {
 	return SUCCESS, "Success", response
 }
 
@@ -28,9 +28,9 @@ func WithRecordNotFound() (code ResultCode, message string, result interface{}) 
 	return RECORD_NOT_FOUND, "Record not found.", nil
 }
 
-func WithResponseError(err error, response ...interface{}) (code ResultCode, message string, result interface{}) {
+func WithResponseError(err error, response interface{}) (code ResultCode, message string, result interface{}) {
 	if err != nil {
 		return WithServerError(err)
 	}
-	return SuccessResponse(response...)
+	return SuccessResponse(response)
 }
