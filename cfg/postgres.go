@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func NewPostgresDB(key string) (*db.MaoDB, error) {
@@ -21,12 +22,15 @@ func NewPostgresDB(key string) (*db.MaoDB, error) {
 	}
 
 	dsn := fmt.Sprintf("host='%s' port='%s' user='%s' dbname='%s' password='%s' sslmode='%s'", address, port, username, dbName, password, sslmode)
-	engine, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	var logMode = logger.Info
+	if !viper.GetBool(fmt.Sprintf("%s.log_mode", key)) {
+		logMode = logger.Silent
+	}
+	engine, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logMode),
+	})
 	if err != nil {
 		return nil, err
-	}
-	if viper.GetBool(fmt.Sprintf("%s.log_mode", key)) {
-		engine = engine.Debug()
 	}
 	return &db.MaoDB{db.Postgres, engine}, nil
 }
