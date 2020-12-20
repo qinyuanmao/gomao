@@ -44,7 +44,7 @@ func Cors() gin.HandlerFunc {
 
 func CheckLogin(key string, getUserByOpenID func(context.Context, string) (interface{}, error)) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		openID := ctx.Request.Header.Get("key")
+		openID := ctx.Request.Header.Get(key)
 		if openID == "" {
 			ctx.Abort()
 			ctx.JSON(http.StatusUnauthorized, map[string]interface{}{
