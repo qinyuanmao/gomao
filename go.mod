@@ -16,6 +16,7 @@ require (
 	github.com/spf13/viper v1.7.0
 	github.com/sqs/goreturns v0.0.0-20181028201513-538ac6014518 // indirect
 	github.com/thoas/go-funk v0.6.0
+	github.com/tidwall/gjson v1.6.4 // indirect
 	github.com/xlstudio/wxbizdatacrypt v1.0.2
 	gorm.io/driver/mysql v1.0.1
 	gorm.io/driver/postgres v1.0.0
