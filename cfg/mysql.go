@@ -3,6 +3,7 @@ package cfg
 import (
 	"fmt"
 
+	_ "github.com/lib/pq"
 	"github.com/qinyuanmao/gomao/db"
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
