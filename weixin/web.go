@@ -4,13 +4,12 @@ import (
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/qinyuanmao/gomao/dingtalk"
 	"github.com/qinyuanmao/gomao/logger"
 	"github.com/spf13/viper"
@@ -161,12 +160,11 @@ type Ticket struct {
 
 func GetSignature(url, ticket string) (timestamp int64, noncestr, signature string) {
 	timestamp = time.Now().Unix()
-	noncestr = strings.ReplaceAll(uuid.New().String(), "-", "")
+	noncestr = RandomStr(16)
 	signature = fmt.Sprintf("jsapi_ticket=%s&noncestr=%s&timestamp=%d&url=%s", ticket, noncestr, timestamp, url)
 	h := sha1.New()
-	h.Write([]byte(signature))
-	bs := h.Sum(nil)
-	signature = fmt.Sprintf("%x", bs)
+	io.WriteString(h, signature)
+	signature = fmt.Sprintf("%x", h.Sum(nil))
 	return
 }
 

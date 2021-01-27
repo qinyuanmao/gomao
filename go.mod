@@ -17,7 +17,7 @@ require (
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
-	github.com/lib/pq v1.9.0 // indirect
+	github.com/lib/pq v1.9.0
 	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/micro/go-micro v1.18.0
 	github.com/mitchellh/mapstructure v1.4.0 // indirect
