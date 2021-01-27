@@ -133,7 +133,7 @@ func getServerToken() (serverToken *ServerToken) {
 }
 
 func (st *ServerToken) GetTicket() (ticket Ticket, err error) {
-	url := "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=%s&type=wx_card"
+	url := "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=%s&type=jsapi"
 	resp, err := http.Get(fmt.Sprintf(url, st.AccessToken))
 	if err != nil {
 		return

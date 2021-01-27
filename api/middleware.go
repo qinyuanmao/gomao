@@ -24,7 +24,7 @@ func CreateMiddleware(middleware Middleware) gin.HandlerFunc {
 }
 
 func Cors() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
+	return CreateMiddleware(func(ctx *Context) {
 		method := ctx.Request.Method
 
 		ctx.Header("Access-Control-Allow-Origin", "*")
@@ -39,11 +39,11 @@ func Cors() gin.HandlerFunc {
 		}
 		// 处理请求
 		ctx.Next()
-	}
+	})
 }
 
 func CheckLogin(key string, getUserByOpenID func(context.Context, string) (interface{}, error)) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
+	return CreateMiddleware(func(ctx *Context) {
 		openID := ctx.Request.Header.Get(key)
 		if openID == "" {
 			ctx.Abort()
