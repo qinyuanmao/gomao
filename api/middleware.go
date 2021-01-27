@@ -77,5 +77,5 @@ func CheckLogin(key string, getUserByOpenID func(context.Context, string) (inter
 		ctx.Set(GIN_USER_KEY, user)
 		ctx.Set(GET_OPEN_ID_KEY, openID)
 		ctx.Next()
-	}
+	})
 }
