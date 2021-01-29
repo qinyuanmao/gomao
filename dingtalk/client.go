@@ -44,7 +44,7 @@ var once sync.Once
 
 func GetInstance() *Client {
 	once.Do(func() {
-		instance = newClient(viper.GetString("dingding_webhook"))
+		instance = newClient(viper.GetString("dingding.webhook"))
 	})
 	return instance
 }
@@ -84,6 +84,7 @@ func (c *Client) consume() {
 }
 
 func (c *Client) send(dingMsg *DingTalkMsg) error {
+	dingMsg.Markdown.Title = fmt.Sprintf("【%s】%s", viper.GetString("dingding.project"), dingMsg.Markdown.Title)
 	jsonMsg, _ := json.Marshal(dingMsg)
 	req, err := http.NewRequest("POST", c.webhook, strings.NewReader(string(jsonMsg)))
 	if err != nil {
