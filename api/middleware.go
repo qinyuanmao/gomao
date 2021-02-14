@@ -14,21 +14,39 @@ const (
 	GET_OPEN_ID_KEY = "GIN_OPEN_ID_KEY"
 )
 
-type Middleware func(*Context)
+func (ctx *Context) Reject(resultCode ResultCode, message string) {
+	ctx.Context.Abort()
+	response := map[string]interface{}{
+		"code":    resultCode,
+		"message": message,
+	}
+	ctx.JSON(resultCode.getHttpCode(), response)
+}
+
+type Middleware func(*Context) (reject bool, resultCode ResultCode, message string)
 
 func CreateMiddleware(middleware Middleware) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		context := &Context{ctx}
-		middleware(context)
+		reject, resultCode, message := middleware(context)
+		if reject {
+			ctx.Abort()
+			ctx.JSON(resultCode.getHttpCode(), map[string]interface{}{
+				"code":    resultCode,
+				"message": message,
+			})
+			return
+		}
+		ctx.Next()
 	}
 }
 
 func Cors() gin.HandlerFunc {
-	return CreateMiddleware(func(ctx *Context) {
+	return CreateMiddleware(func(ctx *Context) (reject bool, resultCode ResultCode, message string) {
 		method := ctx.Request.Method
 
 		ctx.Header("Access-Control-Allow-Origin", "*")
-		ctx.Header("Access-Control-Allow-Headers", "Content-Type, AccessToken, X-CSRF-Token, open_id, Authorization, token, sign, timestamp")
+		ctx.Header("Access-Control-Allow-Headers", "Content-Type, AccessToken, X-CSRF-Token, open_id, Authorization, token, sign, timestamp, Token, OpenID")
 		ctx.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		ctx.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Content-Type")
 		ctx.Header("Access-Control-Allow-Credentials", "true")
@@ -37,45 +55,30 @@ func Cors() gin.HandlerFunc {
 		if method == "OPTIONS" {
 			ctx.AbortWithStatus(http.StatusNoContent)
 		}
-		// 处理请求
-		ctx.Next()
+		return
 	})
 }
 
 func CheckLogin(key string, getUserByOpenID func(context.Context, string) (interface{}, error)) gin.HandlerFunc {
-	return CreateMiddleware(func(ctx *Context) {
+	return CreateMiddleware(func(ctx *Context) (reject bool, resultCode ResultCode, message string) {
 		openID := ctx.Request.Header.Get(key)
 		if openID == "" {
-			ctx.Abort()
-			ctx.JSON(http.StatusUnauthorized, map[string]interface{}{
-				"code":    NOLOGIN,
-				"message": "You are logout.",
-			})
-			return
+			return true, NOLOGIN, "You are logout."
 		}
 		if getUserByOpenID == nil {
 			ctx.Set(GET_OPEN_ID_KEY, openID)
-			ctx.Next()
 			return
 		}
 		user, err := getUserByOpenID(ctx.Request.Context(), openID)
 		if err != nil {
-			ctx.Abort()
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				ctx.JSON(http.StatusUnauthorized, map[string]interface{}{
-					"code":    NOLOGIN,
-					"message": "User not found.",
-				})
+				return true, NOLOGIN, "You are logout."
 			} else {
-				ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-					"code":    SERVER_ERROR,
-					"message": err.Error(),
-				})
+				return true, SERVER_ERROR, err.Error()
 			}
-			return
 		}
 		ctx.Set(GIN_USER_KEY, user)
 		ctx.Set(GET_OPEN_ID_KEY, openID)
-		ctx.Next()
+		return
 	})
 }
