@@ -28,6 +28,10 @@ func WithRecordNotFound() (code ResultCode, message string, result interface{}) 
 	return RECORD_NOT_FOUND, "Record not found.", nil
 }
 
+func WithForbidden() (code ResultCode, message string, result interface{}) {
+	return FORBIDDEN, "Forbidden", nil
+}
+
 func WithResponseError(err error, response interface{}) (code ResultCode, message string, result interface{}) {
 	if err != nil {
 		return WithServerError(err)
