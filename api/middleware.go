@@ -14,22 +14,11 @@ const (
 	GET_OPEN_ID_KEY = "GIN_OPEN_ID_KEY"
 )
 
-func (ctx *Context) Reject(resultCode ResultCode, message string) {
-	ctx.Context.Abort()
-	response := map[string]interface{}{
-		"code":    resultCode,
-		"message": message,
-	}
-	ctx.JSON(resultCode.getHttpCode(), response)
-}
-
-type Middleware func(*Context) (reject bool, resultCode ResultCode, message string)
-
-func CreateMiddleware(middleware Middleware) gin.HandlerFunc {
+func CreateMiddleware(middleware ApiHandler) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		context := &Context{ctx}
-		reject, resultCode, message := middleware(context)
-		if reject {
+		resultCode, message, _ := middleware(context)
+		if resultCode != 0 {
 			ctx.Abort()
 			ctx.JSON(resultCode.getHttpCode(), map[string]interface{}{
 				"code":    resultCode,
@@ -42,7 +31,7 @@ func CreateMiddleware(middleware Middleware) gin.HandlerFunc {
 }
 
 func Cors() gin.HandlerFunc {
-	return CreateMiddleware(func(ctx *Context) (reject bool, resultCode ResultCode, message string) {
+	return CreateMiddleware(func(ctx *Context) (resultCode ResultCode, message string, result interface{}) {
 		method := ctx.Request.Method
 
 		ctx.Header("Access-Control-Allow-Origin", "*")
@@ -60,10 +49,10 @@ func Cors() gin.HandlerFunc {
 }
 
 func CheckLogin(key string, getUserByOpenID func(context.Context, string) (interface{}, error)) gin.HandlerFunc {
-	return CreateMiddleware(func(ctx *Context) (reject bool, resultCode ResultCode, message string) {
+	return CreateMiddleware(func(ctx *Context) (resultCode ResultCode, message string, result interface{}) {
 		openID := ctx.Request.Header.Get(key)
 		if openID == "" {
-			return true, NOLOGIN, "You are logout."
+			return WithLogout()
 		}
 		if getUserByOpenID == nil {
 			ctx.Set(GET_OPEN_ID_KEY, openID)
@@ -72,9 +61,9 @@ func CheckLogin(key string, getUserByOpenID func(context.Context, string) (inter
 		user, err := getUserByOpenID(ctx.Request.Context(), openID)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return true, NOLOGIN, "You are logout."
+				return WithLogout()
 			} else {
-				return true, SERVER_ERROR, err.Error()
+				return WithServerError(err)
 			}
 		}
 		ctx.Set(GIN_USER_KEY, user)
