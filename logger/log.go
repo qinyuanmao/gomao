@@ -72,7 +72,7 @@ func Warningf(message string, args ...interface{}) {
 
 func getMessage(status, fileName string, line int, messages ...interface{}) string {
 	messageArray := funk.Map(messages, func(message interface{}) string {
-		return fmt.Sprintf("[%s][%s][%s:%d]%v", status, time.Now().Format(time.RFC3339), fileName, line, message)
+		return fmt.Sprintf("[%s][%s][%s:%d]%v", status, time.Now().Format("2006-01-02 15:04:05"), fileName, line, message)
 	}).([]string)
 	return strings.Join(messageArray, "\n")
 }
