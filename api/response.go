@@ -38,3 +38,7 @@ func WithResponseError(err error, response interface{}) (code ResultCode, messag
 	}
 	return SuccessResponse(response)
 }
+
+func WithRequestError(err error) (code ResultCode, message string, result interface{}) {
+	return PARAMS_ERROR, err.Error(), nil
+}
