@@ -17,14 +17,18 @@ func JsonApi(handler ApiHandler) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		resultCode, message, result := handler(&Context{ctx})
 		sendDingTalk(ctx.Request.URL.String(), message, resultCode.getHttpCode())
-		response := map[string]interface{}{
-			"code":    resultCode,
-			"message": message,
+		if resultCode == SUCCESS {
+			response := map[string]interface{}{
+				"code":    resultCode,
+				"message": message,
+			}
+			if result != nil {
+				response["result"] = result
+			}
+			ctx.JSON(resultCode.getHttpCode(), response)
+		} else {
+			ctx.String(resultCode.getHttpCode(), message)
 		}
-		if result != nil {
-			response["result"] = result
-		}
-		ctx.JSON(resultCode.getHttpCode(), response)
 	}
 }
 
