@@ -18,13 +18,10 @@ func CreateMiddleware(middleware ApiHandler) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		context := &Context{ctx}
 		resultCode, message, _ := middleware(context)
-		if resultCode != 0 {
+		if resultCode != SUCCESS {
 			ctx.Abort()
-			ctx.JSON(resultCode.getHttpCode(), map[string]interface{}{
-				"code":    resultCode,
-				"message": message,
-			})
-			return
+			ctx.String(resultCode.getHttpCode(), message)
+			sendDingTalk(ctx.Request.URL.String(), message, resultCode.getHttpCode())
 		}
 		ctx.Next()
 	}
