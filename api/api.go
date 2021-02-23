@@ -51,19 +51,19 @@ func FileApi(hander FileHandler) gin.HandlerFunc {
 }
 
 func sendDingTalk(url, message string, httpCode int) {
-	if httpCode != http.StatusOK {
+	if httpCode == http.StatusInternalServerError {
 		logger.Error(message)
-		webhook := viper.GetString("dingding_webhook")
+		webhook := viper.GetString("dingtalk.webhook")
 		env := viper.GetString("env")
 		if webhook != "" {
 			dingtalk.GetInstance().Notify(&dingtalk.DingTalkMsg{
 				MsgType: "markdown",
 				Markdown: dingtalk.Markdown{
 					Title: "监控报警",
-					Text:  fmt.Sprintf("## 【%s】[%s] 接口请求异常: %d\n\n > 错误信息: %s", env, url, httpCode, message),
+					Text:  fmt.Sprintf("## %s \n\n ### 【%s】[%s] 接口请求异常: \n\n > 错误信息: %s", viper.GetString("project_name"), env, url, message),
 				},
 				At: dingtalk.At{
-					AtMobiles: []string{"18583872978"},
+					AtMobiles: []string{"+86-18583872978"},
 					IsAtAll:   false,
 				},
 			})

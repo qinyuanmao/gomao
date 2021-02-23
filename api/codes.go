@@ -12,6 +12,7 @@ const (
 	NOLOGIN
 	RECORD_NOT_FOUND
 	FORBIDDEN
+	TIME_OUT
 )
 
 func (code ResultCode) getHttpCode() int {
@@ -30,6 +31,8 @@ func (code ResultCode) getHttpCode() int {
 		return http.StatusNotFound
 	case FORBIDDEN:
 		return http.StatusForbidden
+	case TIME_OUT:
+		return http.StatusRequestTimeout
 	}
 	return http.StatusNotFound
 }
