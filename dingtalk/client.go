@@ -84,7 +84,6 @@ func (c *Client) consume() {
 }
 
 func (c *Client) send(dingMsg *DingTalkMsg) error {
-	dingMsg.Markdown.Title = fmt.Sprintf("【%s】%s", viper.GetString("dingding.project"), dingMsg.Markdown.Title)
 	jsonMsg, _ := json.Marshal(dingMsg)
 	req, err := http.NewRequest("POST", c.webhook, strings.NewReader(string(jsonMsg)))
 	if err != nil {
