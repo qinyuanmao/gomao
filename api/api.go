@@ -3,11 +3,13 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/qinyuanmao/gomao/dingtalk"
 	"github.com/qinyuanmao/gomao/logger"
 	"github.com/spf13/viper"
+	"github.com/thoas/go-funk"
 )
 
 type ApiHandler func(ctx *Context) (resultCode ResultCode, message string, result interface{})
@@ -56,14 +58,21 @@ func sendDingTalk(url, message string, httpCode int) {
 		webhook := viper.GetString("dingtalk.webhook")
 		env := viper.GetString("env")
 		if webhook != "" {
+			var atMobiles = make([]string, 0)
+			if env == "production" {
+				atMobiles = viper.GetStringSlice("dingtalk.at_mobiles")
+			}
 			dingtalk.GetInstance().Notify(&dingtalk.DingTalkMsg{
 				MsgType: "markdown",
 				Markdown: dingtalk.Markdown{
 					Title: "监控报警",
-					Text:  fmt.Sprintf("## %s \n\n ### 【%s】[%s] 接口请求异常: \n\n > 错误信息: %s \n\n @18583872978", viper.GetString("project_name"), env, url, message),
+					Text: fmt.Sprintf("## %s \n\n ### 【%s】[%s] 接口请求异常: \n\n > 错误信息: %s \n\n %s", viper.GetString("project_name"), env, url, message,
+						strings.Join(funk.Map(atMobiles, func(item string) string {
+							return fmt.Sprintf("@%s", item)
+						}).([]string), ",")),
 				},
 				At: dingtalk.At{
-					AtMobiles: []string{"18583872978"},
+					AtMobiles: atMobiles,
 					IsAtAll:   false,
 				},
 			})
