@@ -60,7 +60,7 @@ func sendDingTalk(url, message string, httpCode int) {
 				MsgType: "markdown",
 				Markdown: dingtalk.Markdown{
 					Title: "监控报警",
-					Text:  fmt.Sprintf("## %s \n\n ### 【%s】[%s] 接口请求异常: \n\n > 错误信息: %s", viper.GetString("project_name"), env, url, message),
+					Text:  fmt.Sprintf("## %s \n\n ### 【%s】[%s] 接口请求异常: \n\n > 错误信息: %s \n\n @18583872978", viper.GetString("project_name"), env, url, message),
 				},
 				At: dingtalk.At{
 					AtMobiles: []string{"18583872978"},
