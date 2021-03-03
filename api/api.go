@@ -49,6 +49,7 @@ func FileApi(hander FileHandler) gin.HandlerFunc {
 		ctx.Writer.Header().Set("Content-Range", fmt.Sprintf("bytes 0-%d/%d", len(bytes), len(bytes)))
 		ctx.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment;filename=%s", fileName))
 		ctx.Writer.Header().Set("Accept-Length", fmt.Sprintf("%d", len(bytes)))
+		ctx.Writer.Header().Set("Content-Length", fmt.Sprintf("%d", len(bytes)))
 		ctx.Writer.Write(bytes)
 	}
 }
