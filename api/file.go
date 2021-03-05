@@ -42,7 +42,6 @@ func sendFile(writer http.ResponseWriter, request *http.Request, f *os.File, con
 	writer.Header().Add("Accept-Ranges", "bytes")
 	writer.Header().Add("Content-Type", contentType)
 	writer.Header().Set("Content-Length", fmt.Sprintf("%d", info.Size()))
-	writer.Header().Set("Accept-Length", fmt.Sprintf("%d", info.Size()))
 	writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s", fileName))
 	var start, end int64
 	if r := request.Header.Get("Range"); r != "" {
