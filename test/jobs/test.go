@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/qinyuanmao/gomao/listener"
-	"github.com/qinyuanmao/gomao/logger"
+	"e.coding.net/tssoft/repository/gomao/listener"
+	"e.coding.net/tssoft/repository/gomao/logger"
 
-	"github.com/qinyuanmao/gomao/jobs"
-	_ "github.com/qinyuanmao/gomao/jobs"
+	"e.coding.net/tssoft/repository/gomao/jobs"
+	_ "e.coding.net/tssoft/repository/gomao/jobs"
 )
 
 func main() {

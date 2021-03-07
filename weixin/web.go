@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/qinyuanmao/gomao/dingtalk"
-	"github.com/qinyuanmao/gomao/logger"
+	"e.coding.net/tssoft/repository/gomao/dingtalk"
+	"e.coding.net/tssoft/repository/gomao/logger"
 	"github.com/spf13/viper"
 )
 

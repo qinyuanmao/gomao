@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/qinyuanmao/gomao/logger"
-	"github.com/qinyuanmao/gomao/security"
-	_ "github.com/qinyuanmao/gomao/security"
+	"e.coding.net/tssoft/repository/gomao/logger"
+	"e.coding.net/tssoft/repository/gomao/security"
+	_ "e.coding.net/tssoft/repository/gomao/security"
 )
 
 func main() {

@@ -1,7 +1,7 @@
 package weixin
 
 import (
-	"github.com/qinyuanmao/gomao/logger"
+	"e.coding.net/tssoft/repository/gomao/logger"
 	"github.com/xlstudio/wxbizdatacrypt"
 )
 

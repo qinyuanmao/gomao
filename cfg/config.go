@@ -1,7 +1,7 @@
 package cfg
 
 import (
-	"github.com/qinyuanmao/gomao/logger"
+	"e.coding.net/tssoft/repository/gomao/logger"
 	"github.com/spf13/viper"
 )
 

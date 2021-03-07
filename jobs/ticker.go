@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/qinyuanmao/gomao/logger"
+	"e.coding.net/tssoft/repository/gomao/logger"
 	"github.com/thoas/go-funk"
 )
 

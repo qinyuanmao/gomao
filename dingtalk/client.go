@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/qinyuanmao/gomao/logger"
-	"github.com/qinyuanmao/gomao/network"
+	"e.coding.net/tssoft/repository/gomao/logger"
+	"e.coding.net/tssoft/repository/gomao/network"
 	"github.com/spf13/viper"
 )
 

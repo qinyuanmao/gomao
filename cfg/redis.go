@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"e.coding.net/tssoft/repository/gomao/logger"
 	"github.com/go-redis/redis"
-	"github.com/qinyuanmao/gomao/logger"
 	"github.com/spf13/viper"
 )
 

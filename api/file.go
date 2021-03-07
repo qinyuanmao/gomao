@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	"e.coding.net/tssoft/repository/gomao/logger"
 	"github.com/gin-gonic/gin"
-	"github.com/qinyuanmao/gomao/logger"
 )
 
 type FileHandler func(ctx *Context) (resultCode ResultCode, message string, filePath, fileName, contentType string)

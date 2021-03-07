@@ -13,8 +13,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/qinyuanmao/gomao/logger"
-	"github.com/qinyuanmao/gomao/utils"
+	"e.coding.net/tssoft/repository/gomao/logger"
+	"e.coding.net/tssoft/repository/gomao/utils"
 	"github.com/spf13/viper"
 )
 
