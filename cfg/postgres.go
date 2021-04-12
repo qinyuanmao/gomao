@@ -22,7 +22,7 @@ func NewPostgresDB(key string) (*db.MaoDB, error) {
 		sslmode = "disable"
 	}
 
-	dsn := fmt.Sprintf("host='%s' port='%s' user='%s' dbname='%s' password='%s' sslmode='%s'", address, port, username, dbName, password, sslmode)
+	dsn := fmt.Sprintf("host='%s' port='%s' user='%s' dbname='%s' password='%s' sslmode='%s' TimeZone='Asia/Shanghai'", address, port, username, dbName, password, sslmode)
 	var logMode = logger.Info
 	if !viper.GetBool(fmt.Sprintf("%s.log_mode", key)) {
 		logMode = logger.Silent
