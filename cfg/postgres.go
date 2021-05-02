@@ -18,11 +18,14 @@ func NewPostgresDB(key string) (*db.MaoDB, error) {
 	port := viper.GetString(fmt.Sprintf("%s.port", key))
 	address := viper.GetString(fmt.Sprintf("%s.address", key))
 	sslmode := viper.GetString(fmt.Sprintf("%s.sslmode", key))
+	timezone := viper.GetString(fmt.Sprintf("%s.timezone", key))
 	if sslmode == "" {
 		sslmode = "disable"
 	}
-
-	dsn := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s TimeZone=Asia/Shanghai", address, port, username, dbName, password, sslmode)
+	if timezone == "" {
+		timezone = "UTC"
+	}
+	dsn := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s TimeZone=%s", address, port, username, dbName, password, sslmode, timezone)
 	var logMode = logger.Info
 	if !viper.GetBool(fmt.Sprintf("%s.log_mode", key)) {
 		logMode = logger.Silent
