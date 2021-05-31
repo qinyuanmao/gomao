@@ -23,7 +23,7 @@ func NewPostgresDB(key string) (*db.MaoDB, error) {
 		sslmode = "disable"
 	}
 	if timezone == "" {
-		timezone = "UTC"
+		timezone = "Europe/London"
 	}
 	dsn := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s TimeZone=%s", address, port, username, dbName, password, sslmode, timezone)
 	var logMode = logger.Info
