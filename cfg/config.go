@@ -13,5 +13,7 @@ func LoadConfig(path string) (err error) {
 		logger.Error(err)
 		return
 	}
+	viper.SetConfigType("env")
+	viper.AutomaticEnv()
 	return
 }

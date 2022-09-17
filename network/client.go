@@ -16,7 +16,7 @@ func NewClient(opt ...Option) *Client {
 	opts := options{
 		timeout:             5 * time.Second, // 请求超时时间
 		keepAlive:           30 * time.Second,
-		maxIdleConnsPerHost: 2, // 请求量较大时需调整此参数,否则会出现fd被耗尽,出现大量TIME_WAIT
+		maxIdleConnsPerHost: 2, // 请求量较大时需调整此参数，否则会出现 fd 被耗尽，出现大量 TIME_WAIT
 	}
 	for _, o := range opt {
 		o(&opts)

@@ -52,7 +52,7 @@ func init() {
 }
 
 func Encode(input string) (output string, err error) {
-	//解密pem格式的公钥
+	//解密 pem 格式的公钥
 	block, _ := pem.Decode([]byte(engine.publicKey))
 	if block == nil {
 		return "", errors.New("Public key error!")
@@ -78,7 +78,7 @@ func Decode(input string) (output string, err error) {
 	if block == nil {
 		return "", errors.New("Private key error!")
 	}
-	//解析PKCS1格式的私钥
+	//解析 PKCS1 格式的私钥
 	priv, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
 		return "", err
