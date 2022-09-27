@@ -5,9 +5,11 @@ import (
 	"github.com/spf13/viper"
 )
 
-func LoadConfig(path string) (err error) {
+func LoadConfig(paths ...string) (err error) {
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath(path)
+	for _, path := range paths {
+		viper.AddConfigPath(path)
+	}
 	err = viper.ReadInConfig()
 	if err != nil {
 		logger.Error(err)

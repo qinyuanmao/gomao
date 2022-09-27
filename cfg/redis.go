@@ -2,6 +2,7 @@ package cfg
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"e.coding.net/tssoft/repository/gomao/logger"
@@ -18,6 +19,23 @@ func NewRedisConf(key string) (*RedisDB, error) {
 		Password: viper.GetString(fmt.Sprintf("%s.password", key)),
 		DB:       viper.GetInt(fmt.Sprintf("%s.db", key)),
 		Addr:     viper.GetString(fmt.Sprintf("%s.address", key)),
+	}
+	redisClient := redis.NewClient(redisOptions)
+	if pong, err := redisClient.Ping().Result(); err != nil {
+		logger.Error(err.Error())
+		return nil, err
+	} else {
+		logger.Info(pong)
+	}
+	return &RedisDB{redisClient}, nil
+}
+
+func NewRedisConfByENV(key string) (*RedisDB, error) {
+	key = strings.ToUpper(key)
+	redisOptions := &redis.Options{
+		Password: viper.GetString(fmt.Sprintf("%s_PASSWORD", key)),
+		DB:       viper.GetInt(fmt.Sprintf("%s_DB", key)),
+		Addr:     viper.GetString(fmt.Sprintf("%s_ADDRESS", key)),
 	}
 	redisClient := redis.NewClient(redisOptions)
 	if pong, err := redisClient.Ping().Result(); err != nil {
