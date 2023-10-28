@@ -14,7 +14,7 @@ import (
 
 type ApiHandler func(ctx *Context) (resultCode ResultCode, message string, result interface{})
 
-func JsonApi(handler ApiHandler) gin.HandlerFunc {
+func JsonApi(handler ApiHandler, resultHandler ...func(result any) any) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		resultCode, message, result := handler(&Context{ctx})
 		sendDingTalk(ctx.Request.URL.String(), message, resultCode.getHttpCode())
@@ -25,6 +25,9 @@ func JsonApi(handler ApiHandler) gin.HandlerFunc {
 			}
 			if result != nil {
 				response["result"] = result
+				for _, handler := range resultHandler {
+					response["result"] = handler(response["result"])
+				}
 			}
 			ctx.JSON(resultCode.getHttpCode(), response)
 		} else {
