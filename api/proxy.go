@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -73,16 +72,23 @@ func ProxyHandler(targetHost string, beforeRequestFn func(req *http.Request),
 		// targetRequestUrl = request.URL.String()
 	}
 
-	if formatResponse == nil {
-		WithServerError(errors.New("formatResponse is nil"))
+	proxy.ModifyResponse = func(resp *http.Response) error {
+		resp.Header.Set("Access-Control-Allow-Origin", "*")
+		resp.Header.Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		resp.Header.Set("Access-Control-Allow-Headers", "Content-Type, AccessToken, X-CSRF-Token, Authorization, Token")
+		resp.Header.Set("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Content-Type")
+		resp.Header.Set("Access-Control-Allow-Credentials", "true")
+		if formatResponse != nil {
+			return formatResponse(resp)
+		}
+		return nil
 	}
-	proxy.ModifyResponse = formatResponse
+
 	return proxy, err
 }
 
 func JsonProxyRequestHandler(proxyFunc func(*gin.Context) *httputil.ReverseProxy) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		proxyFunc(ctx).ServeHTTP(ctx.Writer, ctx.Request)
-		return
 	}
 }
