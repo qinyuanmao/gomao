@@ -7,8 +7,9 @@ import (
 type databaseType string
 
 const (
-	Mysql    databaseType = "mysql"
-	Postgres databaseType = "postgres"
+	Mysql      databaseType = "mysql"
+	Postgres   databaseType = "postgres"
+	Clickhouse databaseType = "clickhouse"
 )
 
 type MaoDB struct {
