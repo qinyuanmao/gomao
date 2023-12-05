@@ -37,7 +37,7 @@ func NewPostgresDB(key string) (*db.MaoDB, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &db.MaoDB{db.Postgres, engine}, nil
+	return &db.MaoDB{DatabaseType: db.Postgres, DB: engine}, nil
 }
 
 func NewPostgresDBByENV(key string) (*db.MaoDB, error) {
@@ -66,5 +66,5 @@ func NewPostgresDBByENV(key string) (*db.MaoDB, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &db.MaoDB{db.Postgres, engine}, nil
+	return &db.MaoDB{DatabaseType: db.Postgres, DB: engine}, nil
 }

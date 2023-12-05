@@ -24,7 +24,7 @@ func NewMysqlDB(key string) (*db.MaoDB, error) {
 	if viper.GetBool(fmt.Sprintf("%s.log_mode", key)) {
 		engine = engine.Debug()
 	}
-	return &db.MaoDB{db.Mysql, engine}, nil
+	return &db.MaoDB{DatabaseType: db.Mysql, DB: engine}, nil
 }
 
 func NewMysqlDBByENV(key string) (*db.MaoDB, error) {
@@ -41,5 +41,5 @@ func NewMysqlDBByENV(key string) (*db.MaoDB, error) {
 	if viper.GetBool(fmt.Sprintf("%s.log_mode", key)) {
 		engine = engine.Debug()
 	}
-	return &db.MaoDB{db.Mysql, engine}, nil
+	return &db.MaoDB{DatabaseType: db.Mysql, DB: engine}, nil
 }
