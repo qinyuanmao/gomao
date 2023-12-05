@@ -9,9 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
-	"regexp"
-	"strconv"
-	"time"
 
 	"e.coding.net/tssoft/repository/gomao/logger"
 	"e.coding.net/tssoft/repository/gomao/utils"
@@ -55,7 +52,7 @@ func Encode(input string) (output string, err error) {
 	//解密 pem 格式的公钥
 	block, _ := pem.Decode([]byte(engine.publicKey))
 	if block == nil {
-		return "", errors.New("Public key error!")
+		return "", errors.New("public key error")
 	}
 	// 解析公钥
 	pubInterface, err := x509.ParsePKIXPublicKey(block.Bytes)
@@ -76,7 +73,7 @@ func Decode(input string) (output string, err error) {
 	//解密
 	block, _ := pem.Decode([]byte(engine.privateKey))
 	if block == nil {
-		return "", errors.New("Private key error!")
+		return "", fmt.Errorf("private key error")
 	}
 	//解析 PKCS1 格式的私钥
 	priv, err := x509.ParsePKCS1PrivateKey(block.Bytes)
@@ -89,28 +86,5 @@ func Decode(input string) (output string, err error) {
 	}
 	// 解密
 	o, err := rsa.DecryptPKCS1v15(rand.Reader, priv, i)
-	return string(o), nil
-}
-
-func EncodeToken(userID int64, expiredAt int64) (token string, err error) {
-	originValue := fmt.Sprintf("%d:%d", userID, expiredAt)
-	return Encode(originValue)
-}
-
-func DecodeToToken(token string) (userID int64, expiredAt int64, err error) {
-	output, err := Decode(token)
-	if err != nil {
-		return
-	}
-	r := regexp.MustCompile(`(\d+)\:(\d+)`)
-	result := r.FindStringSubmatch(output)
-	if len(result) < 3 {
-		return 0, 0, fmt.Errorf("Token is incorrect!")
-	}
-	userID, _ = strconv.ParseInt(result[1], 10, 64)
-	expiredAt, _ = strconv.ParseInt(result[2], 10, 64)
-	if expiredAt < time.Now().Unix() {
-		return 0, 0, fmt.Errorf("Token is expired!")
-	}
-	return
+	return string(o), err
 }

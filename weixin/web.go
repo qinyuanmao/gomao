@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"sync"
 	"time"
@@ -33,7 +32,7 @@ func WebLogin(code string) (person WeixinWebPerson, err error) {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	err = json.Unmarshal(body, &person)
 	if err != nil {
 		return
@@ -49,7 +48,7 @@ func RefreshWebToken(refreshToken string) (person WeixinWebPerson, err error) {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	err = json.Unmarshal(body, &person)
 	if err != nil {
 		return
@@ -61,7 +60,7 @@ type WeixinWebUser struct {
 	OpenID     string   `json:"openid"`
 	Nickname   string   `json:"nickname"`
 	Sex        int      `json:"sex"`
-	Province   string   `json::"province"`
+	Province   string   `json:"province"`
 	City       string   `json:"city"`
 	Country    string   `json:"country"`
 	HeadImgUrl string   `json:"headimgurl"`
@@ -79,7 +78,7 @@ func GetWebUserInfo(accessToken string, openID string) (user WeixinWebUser, err 
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	err = json.Unmarshal(body, &user)
 	if err != nil {
 		return
@@ -118,7 +117,7 @@ func getServerToken() (serverToken *ServerToken) {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		sendError(fmt.Sprintf(url, viper.GetString("weixin.app_id"), viper.GetString("weixin.app_secret")), err)
 		return
@@ -140,7 +139,7 @@ func (st *ServerToken) GetTicket() (ticket Ticket, err error) {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return
 	}

@@ -8,8 +8,8 @@ import (
 	"e.coding.net/tssoft/repository/gomao/dingtalk"
 	"e.coding.net/tssoft/repository/gomao/logger"
 	"github.com/gin-gonic/gin"
+	"github.com/samber/lo"
 	"github.com/spf13/viper"
-	"github.com/thoas/go-funk"
 )
 
 type ApiHandler func(ctx *Context) (resultCode ResultCode, message string, result interface{})
@@ -51,9 +51,9 @@ func sendDingTalk(url, message string, httpCode int) {
 				Markdown: dingtalk.Markdown{
 					Title: "监控报警",
 					Text: fmt.Sprintf("## %s \n\n ### 【%s】[%s] 接口请求异常: \n\n > 错误信息: %s \n\n %s", viper.GetString("project_name"), env, url, message,
-						strings.Join(funk.Map(atMobiles, func(item string) string {
+						strings.Join(lo.Map(atMobiles, func(item string, _ int) string {
 							return fmt.Sprintf("@%s", item)
-						}).([]string), ", ")),
+						}), ", ")),
 				},
 				At: dingtalk.At{
 					AtMobiles: atMobiles,

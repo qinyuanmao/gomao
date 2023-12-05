@@ -17,10 +17,10 @@ func WithParamError(paramName, errorMessage string) (code ResultCode, message st
 }
 
 func WithLogout(errMessage ...string) (code ResultCode, message string, result interface{}) {
-	if errMessage != nil && len(errMessage) > 0 {
+	if len(errMessage) > 0 {
 		return NOLOGIN, errMessage[0], nil
 	}
-	return NOLOGIN, fmt.Sprintf("用户未登录。"), nil
+	return NOLOGIN, "用户未登录。", nil
 }
 
 func WithServerError(err error) (code ResultCode, message string, result interface{}) {
@@ -28,7 +28,7 @@ func WithServerError(err error) (code ResultCode, message string, result interfa
 }
 
 func WithRecordNotFound(errMessage ...string) (code ResultCode, message string, result interface{}) {
-	if errMessage != nil && len(errMessage) > 0 {
+	if len(errMessage) > 0 {
 		return RECORD_NOT_FOUND, errMessage[0], nil
 	}
 	return RECORD_NOT_FOUND, "未找到记录。", nil

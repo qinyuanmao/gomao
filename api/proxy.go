@@ -1,7 +1,6 @@
 package api
 
 import (
-	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -48,7 +47,6 @@ func ProxyHandler(targetHost string, beforeRequestFn func(req *http.Request),
 		return nil, err
 	}
 	proxy := httputil.NewSingleHostReverseProxy(url)
-	// var targetRequestUrl string
 	proxy.Director = func(request *http.Request) {
 		targetQuery := url.RawQuery
 		request.URL.Scheme = url.Scheme
@@ -68,24 +66,9 @@ func ProxyHandler(targetHost string, beforeRequestFn func(req *http.Request),
 		if beforeRequestFn != nil {
 			beforeRequestFn(request)
 		}
-		log.Println("request.URL.Path：", request.URL.Path, "request.URL.RawQuery：", request.URL.RawQuery)
-		// targetRequestUrl = request.URL.String()
 	}
 
 	proxy.ModifyResponse = func(resp *http.Response) error {
-		// // 删除响应头中的跨域配置
-		// resp.Header.Del("Access-Control-Allow-Origin")
-		// resp.Header.Del("Access-Control-Allow-Methods")
-		// resp.Header.Del("Access-Control-Allow-Headers")
-		// resp.Header.Del("Access-Control-Expose-Headers")
-		// resp.Header.Del("Access-Control-Allow-Credentials")
-
-		// // 设置跨域
-		// resp.Header.Set("Access-Control-Allow-Origin", "*")
-		// resp.Header.Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-		// resp.Header.Set("Access-Control-Allow-Headers", "Content-Type, AccessToken, X-CSRF-Token, Authorization, Token")
-		// resp.Header.Set("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Content-Type")
-		// resp.Header.Set("Access-Control-Allow-Credentials", "true")
 		if formatResponse != nil {
 			return formatResponse(resp)
 		}
