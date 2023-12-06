@@ -40,10 +40,33 @@ func singleJoiningSlash(a, b string) string {
 	return a + b
 }
 
-func ProxyHandler(targetHost string, beforeRequestFn func(req *http.Request),
-	formatResponse func(resp *http.Response) error) (*httputil.ReverseProxy, error) {
-	url, err := url.Parse(targetHost)
+type ProxyOptons struct {
+	targetHost      string
+	beforeRequestFn func(req *http.Request) error
+	formatResponse  func(resp *http.Response) error
+	err             error
+}
+
+func NewProxyOptions(targetHost string) *ProxyOptons {
+	return &ProxyOptons{
+		targetHost: targetHost,
+	}
+}
+
+func (p *ProxyOptons) SetBeforeRequestFn(fn func(req *http.Request) error) *ProxyOptons {
+	p.beforeRequestFn = fn
+	return p
+}
+
+func (p *ProxyOptons) SetFormatResponse(fn func(resp *http.Response) error) *ProxyOptons {
+	p.formatResponse = fn
+	return p
+}
+
+func (p *ProxyOptons) BuildProxy() (*httputil.ReverseProxy, error) {
+	url, err := url.Parse(p.targetHost)
 	if err != nil {
+		p.err = err
 		return nil, err
 	}
 	proxy := httputil.NewSingleHostReverseProxy(url)
@@ -63,19 +86,23 @@ func ProxyHandler(targetHost string, beforeRequestFn func(req *http.Request),
 			request.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.96 Safari/537.36")
 			request.Header.Set("Content-Type", "application/json; charset=utf-8")
 		}
-		if beforeRequestFn != nil {
-			beforeRequestFn(request)
+		if p.beforeRequestFn != nil {
+			p.err = p.beforeRequestFn(request)
 		}
 	}
 
 	proxy.ModifyResponse = func(resp *http.Response) error {
-		if formatResponse != nil {
-			return formatResponse(resp)
+		if p.formatResponse != nil {
+			err = p.formatResponse(resp)
+			if err != nil {
+				p.err = err
+			}
+			return err
 		}
 		return nil
 	}
 
-	return proxy, err
+	return proxy, p.err
 }
 
 func JsonProxyRequestHandler(proxyFunc func(*gin.Context) (*httputil.ReverseProxy, error)) gin.HandlerFunc {
