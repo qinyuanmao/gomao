@@ -5,13 +5,9 @@ import (
 	"errors"
 	"net/http"
 
+	"e.coding.net/tssoft/repository/gomao/security"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-)
-
-const (
-	GIN_USER_KEY    = "GIN_USER_KEY"
-	GET_OPEN_ID_KEY = "GIN_OPEN_ID_KEY"
 )
 
 func CreateMiddleware(middleware ApiHandler) gin.HandlerFunc {
@@ -37,7 +33,7 @@ func Cors() gin.HandlerFunc {
 		ctx.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Content-Type")
 		ctx.Header("Access-Control-Allow-Credentials", "true")
 
-		//放行所有OPTIONS方法
+		//放行所有 OPTIONS 方法
 		if method == "OPTIONS" {
 			ctx.AbortWithStatus(http.StatusNoContent)
 		}
@@ -45,17 +41,20 @@ func Cors() gin.HandlerFunc {
 	})
 }
 
-func CheckLogin(key string, getUserByOpenID func(context.Context, string) (interface{}, error)) gin.HandlerFunc {
+func CheckJWTToken[T any](getUser func(context.Context, int64) (T, error)) gin.HandlerFunc {
 	return CreateMiddleware(func(ctx *Context) (resultCode ResultCode, message string, result interface{}) {
-		openID := ctx.Request.Header.Get(key)
-		if openID == "" {
+		authorization := ctx.Request.Header.Get("Authorization")
+		c, err := security.JwtDecode(authorization)
+		if err != nil {
 			return WithLogout()
 		}
-		if getUserByOpenID == nil {
-			ctx.Set(GET_OPEN_ID_KEY, openID)
-			return
+		ctx.Set("JWT", c)
+		var userId, error = c.GetUserId()
+		if error != nil {
+			return WithLogout()
 		}
-		user, err := getUserByOpenID(ctx.Request.Context(), openID)
+		ctx.Set("USER_ID", userId)
+		user, err := getUser(ctx.Request.Context(), userId)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return WithLogout()
@@ -63,8 +62,8 @@ func CheckLogin(key string, getUserByOpenID func(context.Context, string) (inter
 				return WithServerError(err)
 			}
 		}
-		ctx.Set(GIN_USER_KEY, user)
-		ctx.Set(GET_OPEN_ID_KEY, openID)
+		ctx.Set("USER", user)
+		ctx.Next()
 		return
 	})
 }
