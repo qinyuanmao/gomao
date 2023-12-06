@@ -78,8 +78,16 @@ func ProxyHandler(targetHost string, beforeRequestFn func(req *http.Request),
 	return proxy, err
 }
 
-func JsonProxyRequestHandler(proxyFunc func(*gin.Context) *httputil.ReverseProxy) gin.HandlerFunc {
+func JsonProxyRequestHandler(proxyFunc func(*gin.Context) (*httputil.ReverseProxy, error)) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		proxyFunc(ctx).ServeHTTP(ctx.Writer, ctx.Request)
+		proxy, err := proxyFunc(ctx)
+		if err != nil {
+			ctx.JSON(SERVER_ERROR.getHttpCode(), map[string]any{
+				"code":    SERVER_ERROR,
+				"message": err.Error(),
+			})
+			return
+		}
+		proxy.ServeHTTP(ctx.Writer, ctx.Request)
 	}
 }
