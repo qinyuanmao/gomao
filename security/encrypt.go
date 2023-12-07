@@ -15,14 +15,59 @@ import (
 	"github.com/spf13/viper"
 )
 
-type parser struct {
+type Parser struct {
 	publicKey  string
 	privateKey string
 }
 
-var engine *parser
+func (p *Parser) Encode(input []byte) (output []byte, err error) {
+	//解密 pem 格式的公钥
+	block, _ := pem.Decode([]byte(p.publicKey))
+	if block == nil {
+		return nil, errors.New("public key error")
+	}
+	// 解析公钥
+	pubInterface, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	// 类型断言
+	pub := pubInterface.(*rsa.PublicKey)
+	//加密
+	o, err := rsa.EncryptPKCS1v15(rand.Reader, pub, []byte(input))
+	if err != nil {
+		return nil, err
+	}
+	return []byte(hex.EncodeToString(o)), nil
+}
 
-func init() {
+func (p *Parser) Decode(input []byte) (output []byte, err error) {
+	//解密
+	block, _ := pem.Decode([]byte(p.privateKey))
+	if block == nil {
+		return nil, errors.New("private key error")
+	}
+	//解析 PKCS1 格式的私钥
+	priv, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	i, err := hex.DecodeString(string(input))
+	if err != nil {
+		return nil, err
+	}
+	// 解密
+	return rsa.DecryptPKCS1v15(rand.Reader, priv, i)
+}
+
+func NewParser(publicKey, privateKey string) *Parser {
+	return &Parser{
+		publicKey:  publicKey,
+		privateKey: privateKey,
+	}
+}
+
+func NewDefaultParser() *Parser {
 	privateKeyPath := viper.GetViper().GetString("key.private")
 	if privateKeyPath == "" {
 		privateKeyPath = "./config/rsa_private_key.pem"
@@ -43,48 +88,7 @@ func init() {
 			logger.Errorf("Create %s file error: %s", publicKeyPath, err)
 		}
 	}
-	engine = new(parser)
-	engine.privateKey = utils.ReadFile(privateKeyPath)
-	engine.publicKey = utils.ReadFile(publicKeyPath)
-}
-
-func Encode(input string) (output string, err error) {
-	//解密 pem 格式的公钥
-	block, _ := pem.Decode([]byte(engine.publicKey))
-	if block == nil {
-		return "", errors.New("public key error")
-	}
-	// 解析公钥
-	pubInterface, err := x509.ParsePKIXPublicKey(block.Bytes)
-	if err != nil {
-		return "", err
-	}
-	// 类型断言
-	pub := pubInterface.(*rsa.PublicKey)
-	//加密
-	o, err := rsa.EncryptPKCS1v15(rand.Reader, pub, []byte(input))
-	if err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(o), nil
-}
-
-func Decode(input string) (output string, err error) {
-	//解密
-	block, _ := pem.Decode([]byte(engine.privateKey))
-	if block == nil {
-		return "", fmt.Errorf("private key error")
-	}
-	//解析 PKCS1 格式的私钥
-	priv, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-	if err != nil {
-		return "", err
-	}
-	i, err := hex.DecodeString(input)
-	if err != nil {
-		return "", err
-	}
-	// 解密
-	o, err := rsa.DecryptPKCS1v15(rand.Reader, priv, i)
-	return string(o), err
+	privateKey := utils.ReadFile(privateKeyPath)
+	publicKey := utils.ReadFile(publicKeyPath)
+	return NewParser(string(publicKey), string(privateKey))
 }
