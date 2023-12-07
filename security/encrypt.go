@@ -7,8 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"errors"
-	"fmt"
-	"os/exec"
+	"os"
 
 	"e.coding.net/tssoft/repository/gomao/logger"
 	"e.coding.net/tssoft/repository/gomao/utils"
@@ -27,14 +26,12 @@ func (p *Parser) Encode(input []byte) (output []byte, err error) {
 		return nil, errors.New("public key error")
 	}
 	// 解析公钥
-	pubInterface, err := x509.ParsePKIXPublicKey(block.Bytes)
+	publicKey, err := x509.ParsePKCS1PublicKey(block.Bytes)
 	if err != nil {
 		return nil, err
 	}
-	// 类型断言
-	pub := pubInterface.(*rsa.PublicKey)
 	//加密
-	o, err := rsa.EncryptPKCS1v15(rand.Reader, pub, []byte(input))
+	o, err := rsa.EncryptPKCS1v15(rand.Reader, publicKey, []byte(input))
 	if err != nil {
 		return nil, err
 	}
@@ -68,27 +65,46 @@ func NewParser(publicKey, privateKey string) *Parser {
 }
 
 func NewDefaultParser() *Parser {
+	viper.SetDefault("key.private", "./config/rsa_private_key.pem")
+	viper.SetDefault("key.public", "./config/rsa_public_key.pem")
 	privateKeyPath := viper.GetViper().GetString("key.private")
-	if privateKeyPath == "" {
-		privateKeyPath = "./config/rsa_private_key.pem"
-	}
-	if !utils.FileExist(privateKeyPath) {
-		err := exec.Command("/bin/bash", "-c", fmt.Sprintf("openssl genrsa -out %s 256", privateKeyPath)).Run()
-		if err != nil {
-			logger.Errorf("Create %s file error: %s", privateKeyPath, err)
-		}
-	}
 	publicKeyPath := viper.GetViper().GetString("key.public")
-	if publicKeyPath == "" {
-		publicKeyPath = "./config/rsa_public_key.pem"
-	}
-	if !utils.FileExist(publicKeyPath) {
-		err := exec.Command("/bin/bash", "-c", fmt.Sprintf("openssl rsa -in %s -pubout -out %s", privateKeyPath, publicKeyPath)).Run()
-		if err != nil {
-			logger.Errorf("Create %s file error: %s", publicKeyPath, err)
-		}
+	if !utils.FileExist(privateKeyPath) || !utils.FileExist(publicKeyPath) {
+		createKey(publicKeyPath, privateKeyPath)
 	}
 	privateKey := utils.ReadFile(privateKeyPath)
 	publicKey := utils.ReadFile(publicKeyPath)
 	return NewParser(string(publicKey), string(privateKey))
+}
+
+func createKey(publicKeyPath, privateKeyPath string) {
+	if !utils.FileExist("./config") {
+		os.Mkdir("./config", os.ModePerm)
+	}
+
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		logger.Panicf("create key error: %v", err)
+	}
+
+	utils.CreateFile(privateKeyPath, 0700, func(file *os.File) {
+		err := pem.Encode(file, &pem.Block{
+			Type:  "RSA PRIVATE KEY",
+			Bytes: x509.MarshalPKCS1PrivateKey(key),
+		})
+		if err != nil {
+			logger.Panicf("encode private key error: %v", err)
+		}
+	})
+
+	utils.CreateFile(publicKeyPath, 0755, func(file *os.File) {
+		pub := key.Public()
+		err := pem.Encode(file, &pem.Block{
+			Type:  "RSA PUBLIC KEY",
+			Bytes: x509.MarshalPKCS1PublicKey(pub.(*rsa.PublicKey)),
+		})
+		if err != nil {
+			logger.Panicf("encode public key error: %v", err)
+		}
+	})
 }

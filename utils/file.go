@@ -17,3 +17,22 @@ func ReadFile(path string) string {
 	}
 	return string(bytes)
 }
+
+func OpenFile(path string, fun func(file *os.File)) {
+	file, err := os.Open(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+	fun(file)
+}
+
+func CreateFile(path string, mode os.FileMode, fun func(file *os.File)) {
+	file, err := os.Create(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+	file.Chmod(mode)
+	fun(file)
+}
