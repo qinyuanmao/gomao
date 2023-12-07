@@ -41,10 +41,10 @@ func Cors() gin.HandlerFunc {
 	})
 }
 
-func CheckJWTToken[T any](getUser func(context.Context, int64) (T, error)) gin.HandlerFunc {
+func CheckJWTToken(parser *security.Parser, getUser func(context.Context, int64) (any, error)) gin.HandlerFunc {
 	return CreateMiddleware(func(ctx *Context) (resultCode ResultCode, message string, result interface{}) {
 		authorization := ctx.Request.Header.Get("Authorization")
-		c, err := security.JwtDecode(authorization)
+		c, err := parser.JwtDecode(authorization)
 		if err != nil {
 			return WithLogout()
 		}
