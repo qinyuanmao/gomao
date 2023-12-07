@@ -4,9 +4,11 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/pem"
 	"errors"
+	"fmt"
 	"os"
 
 	"e.coding.net/tssoft/repository/gomao/logger"
@@ -55,6 +57,31 @@ func (p *Parser) Decode(input []byte) (output []byte, err error) {
 	}
 	// 解密
 	return rsa.DecryptPKCS1v15(rand.Reader, priv, i)
+}
+
+func (p *Parser) DecodePkcs8(input []byte) (output []byte, err error) {
+	ciphertext, err := base64.StdEncoding.DecodeString(string(input))
+	if err != nil {
+		return nil, fmt.Errorf("base64 decode failed: %s", err)
+	}
+
+	pkcs8DerKey, err := base64.StdEncoding.DecodeString(string(p.privateKey))
+	if err != nil {
+		return nil, fmt.Errorf("base64 decode failed: %s", err)
+	}
+
+	//解密
+	block, _ := pem.Decode([]byte(pkcs8DerKey))
+	if block == nil {
+		return nil, errors.New("private key error")
+	}
+	//解析 PKCS8 格式的私钥
+	priv, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	// 解密
+	return rsa.DecryptPKCS1v15(rand.Reader, priv.(*rsa.PrivateKey), ciphertext)
 }
 
 func NewParser(publicKey, privateKey string) *Parser {
