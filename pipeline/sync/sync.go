@@ -8,9 +8,9 @@ import (
 
 type Input func(ctx context.Context) (<-chan any, error)
 
-type Output func(ctx context.Context, parapipelines any) error
+type Output func(ctx context.Context, param any) error
 
-type Processor func(ctx context.Context, parapipelines any) (any, error)
+type Processor func(ctx context.Context, param any) (any, error)
 
 type Pipeline struct {
 	input  Input
@@ -61,7 +61,7 @@ func (pipeline *Pipeline) Run(ctx context.Context) error {
 	return nil
 }
 
-func (pipeline *Pipeline) RunN(ctx context.Context, pipelineaxCnt int) error {
+func (pipeline *Pipeline) RunN(ctx context.Context, maxCount int) error {
 	var err error
 
 	in, err := pipeline.input(ctx)
@@ -89,10 +89,10 @@ func (pipeline *Pipeline) RunN(ctx context.Context, pipelineaxCnt int) error {
 	}
 
 	wg := sync.WaitGroup{}
-	wg.Add(pipelineaxCnt)
+	wg.Add(maxCount)
 
 	// 多个协程消费同一个channel
-	for i := 0; i < pipelineaxCnt; i++ {
+	for i := 0; i < maxCount; i++ {
 		go func() {
 			defer wg.Done()
 
