@@ -5,6 +5,10 @@ import (
 	"e.coding.net/tssoft/repository/gomao/pipeline/sync"
 )
 
-func NewPipeline[T sync.Pipeline | async.Pipeline]() *T {
+type Pipeline interface {
+	sync.Pipeline | async.Pipeline
+}
+
+func NewPipeline[T Pipeline]() *T {
 	return new(T)
 }
