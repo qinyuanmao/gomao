@@ -65,13 +65,8 @@ func (p *Parser) DecodePkcs8(input []byte) (output []byte, err error) {
 		return nil, fmt.Errorf("base64 decode failed: %s", err)
 	}
 
-	pkcs8DerKey, err := base64.StdEncoding.DecodeString(string(p.privateKey))
-	if err != nil {
-		return nil, fmt.Errorf("base64 decode failed: %s", err)
-	}
-
 	//解密
-	block, _ := pem.Decode([]byte(pkcs8DerKey))
+	block, _ := pem.Decode([]byte(p.privateKey))
 	if block == nil {
 		return nil, errors.New("private key error")
 	}
