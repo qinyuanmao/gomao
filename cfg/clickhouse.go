@@ -17,7 +17,7 @@ func NewClickHouseDB(key string) (*db.MaoDB, error) {
 	address := viper.GetString(fmt.Sprintf("%s.address", key))
 	writeTimeout := viper.GetInt(fmt.Sprintf("%s.write_timeout", key))
 	readTimeout := viper.GetInt(fmt.Sprintf("%s.read_timeout", key))
-	dsn := fmt.Sprintf("tcp//%s?database=%s&username=%spassword=%s&read_timeout=%d&write_timeout=%d", address, dbName, username, password, readTimeout, writeTimeout)
+	dsn := fmt.Sprintf("tcp://%s/%s?username=%s&password=%s&read_timeout=%ds&dial_timeout=%ds", address, dbName, username, password, readTimeout, writeTimeout)
 	engine, err := gorm.Open(clickhouse.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err

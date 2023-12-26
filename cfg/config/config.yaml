@@ -1,0 +1,24 @@
+clickhouse:
+  username: default
+  password:
+  address: localhost:9000
+  db_name: test
+  read_timeout: 10
+  write_timeout: 20
+  log_mode: true
+
+mysql:
+  username: root
+  password: 
+  address: localhost:3306
+  db_name: test
+  readTimeout: 10
+  writeTimeout: 20
+
+postgres:
+  username: postgres
+  password: 
+  address: localhost:5432
+  db_name: test
+  readTimeout: 10
+  writeTimeout: 20
