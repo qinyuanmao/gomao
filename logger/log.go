@@ -3,44 +3,62 @@ package logger
 import (
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/samber/lo"
 )
 
+// 多层级调用，初始时默认是 3
+var logger *Logger
+var _once = sync.Once{}
+
+func InitCallerLevel(level int) {
+	_once.Do(func() {
+		logger = newLevel(level, 3) // 3 是 getCaller, Error, Errorf... 的上一层级
+	})
+}
+
+func getLogger() *Logger {
+	if logger == nil {
+		InitCallerLevel(3)
+	}
+	return logger
+}
+
 func Error(messages ...any) {
-	New(1).Error(messages...)
+	getLogger().Error(messages...)
 }
 func Errorf(message string, args ...any) {
-	New(1).Errorf(message, args...)
+	getLogger().Errorf(message, args...)
 }
 
 func Debug(messages ...any) {
-	New(1).Debug(messages...)
+	getLogger().Debug(messages...)
 }
 func Debugf(message string, args ...any) {
-	New(1).Debugf(message, args...)
+	getLogger().Debugf(message, args...)
 }
 
 func Info(messages ...any) {
-	New(1).Info(messages...)
+	getLogger().Info(messages...)
 }
 func Infof(message string, args ...any) {
-	New(1).Infof(message, args...)
+	getLogger().Infof(message, args...)
 }
 
 func Warning(messages ...any) {
-	New(1).Warning(messages...)
+	getLogger().Warning(messages...)
 }
 func Warningf(message string, args ...any) {
-	New(1).Warningf(message, args...)
+	getLogger().Warningf(message, args...)
 }
 
 func Panic(messages ...any) {
-	New(1).Panic(messages...)
+	getLogger().Panic(messages...)
 }
 func Panicf(message string, args ...any) {
-	New(1).Panicf(message, args...)
+	getLogger().Panicf(message, args...)
 }
 
 func getMessage(status, caller string, messages ...any) string {

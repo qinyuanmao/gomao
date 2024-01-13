@@ -11,16 +11,21 @@ import (
 )
 
 type Logger struct {
-	level int
+	level      int
+	startLevel int
 }
 
 func New(level int) *Logger {
-	return &Logger{level: level}
+	return newLevel(level, 2) // 2 是 getCaller() 的上一层级
+}
+
+func newLevel(level int, startLevel int) *Logger {
+	return &Logger{level: level, startLevel: startLevel}
 }
 
 func (logger *Logger) getCaller() string {
 	var array []string
-	for i := 1; i <= logger.level; i++ {
+	for i := logger.startLevel; i <= logger.level+logger.startLevel; i++ {
 		pc, _, line, ok := runtime.Caller(i)
 		f := runtime.FuncForPC(pc)
 		if ok && f.Name() != "runtime.goexit" {
