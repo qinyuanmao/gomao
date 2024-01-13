@@ -21,7 +21,7 @@ func InitCallerLevel(level int) {
 
 func getLogger() *Logger {
 	if logger == nil {
-		InitCallerLevel(3)
+		InitCallerLevel(1)
 	}
 	return logger
 }
@@ -63,7 +63,7 @@ func Panicf(message string, args ...any) {
 
 func getMessage(status, caller string, messages ...any) string {
 	messageArray := lo.Map(messages, func(message any, _ int) string {
-		return fmt.Sprintf("[%s]%s\n%s\n%v", status, time.Now().Format("2006-01-02 15:04:05"), caller, message)
+		return fmt.Sprintf("[%s] %s\n%s\n\t%v", status, time.Now().Format("2006-01-02 15:04:05"), caller, message)
 	})
 	return strings.Join(messageArray, "\n")
 }

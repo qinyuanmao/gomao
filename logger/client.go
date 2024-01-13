@@ -25,7 +25,7 @@ func newLevel(level int, startLevel int) *Logger {
 
 func (logger *Logger) getCaller() string {
 	var array []string
-	for i := logger.startLevel; i <= logger.level+logger.startLevel; i++ {
+	for i := logger.startLevel; i < logger.level+logger.startLevel; i++ {
 		pc, _, line, ok := runtime.Caller(i)
 		f := runtime.FuncForPC(pc)
 		if ok && f.Name() != "runtime.goexit" {
@@ -35,6 +35,8 @@ func (logger *Logger) getCaller() string {
 			} else {
 				array = append(array, fmt.Sprintf("%s:%d", fileName, line))
 			}
+		} else {
+			break
 		}
 	}
 	return strings.Join(array, "\n")
