@@ -13,14 +13,15 @@ import (
 type Logger struct {
 	level      int
 	startLevel int
+	debug      bool
 }
 
-func New(level int) *Logger {
-	return newLevel(level, 2) // 2 是 getCaller() 的上一层级
+func New(level int, debug bool) *Logger {
+	return newLevel(level, 2, debug) // 2 是 getCaller() 的上一层级
 }
 
-func newLevel(level int, startLevel int) *Logger {
-	return &Logger{level: level, startLevel: startLevel}
+func newLevel(level int, startLevel int, debug bool) *Logger {
+	return &Logger{level: level, startLevel: startLevel, debug: debug}
 }
 
 func (logger *Logger) getCaller() string {

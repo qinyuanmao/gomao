@@ -13,15 +13,15 @@ import (
 var logger *Logger
 var _once = sync.Once{}
 
-func InitCallerLevel(level int) {
+func InitCallerLevel(level int, debug bool) {
 	_once.Do(func() {
-		logger = newLevel(level, 3) // 3 是 getCaller, Error, Errorf... 的上一层级
+		logger = newLevel(level, 3, debug) // 3 是 getCaller, Error, Errorf... 的上一层级
 	})
 }
 
 func getLogger() *Logger {
 	if logger == nil {
-		InitCallerLevel(1)
+		InitCallerLevel(1, false)
 	}
 	return logger
 }
