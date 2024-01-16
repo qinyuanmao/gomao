@@ -63,13 +63,18 @@ func (p *ProxyOptons) SetFormatResponse(fn func(resp *http.Response) error) *Pro
 	return p
 }
 
-func (p *ProxyOptons) BuildProxy() (*httputil.ReverseProxy, error) {
+type WithProxyOptions func(*httputil.ReverseProxy)
+
+func (p *ProxyOptons) BuildProxy(options ...WithProxyOptions) (*httputil.ReverseProxy, error) {
 	url, err := url.Parse(p.targetHost)
 	if err != nil {
 		p.err = err
 		return nil, err
 	}
 	proxy := httputil.NewSingleHostReverseProxy(url)
+	for _, opt := range options {
+		opt(proxy)
+	}
 	proxy.Director = func(request *http.Request) {
 		targetQuery := url.RawQuery
 		request.URL.Scheme = url.Scheme
