@@ -55,10 +55,28 @@ func (p *Parser) Decode(input []byte) (output []byte, err error) {
 	if err != nil {
 		return nil, err
 	}
-	// 解密
-	return rsa.DecryptPKCS1v15(rand.Reader, priv, i)
-}
 
+	// 分块解密
+	var decrypted []byte
+	blockSize := priv.PublicKey.N.BitLen() / 8
+	for len(i) > 0 {
+		var blockToDecrypt []byte
+		if len(i) > blockSize {
+			blockToDecrypt = i[:blockSize]
+			i = i[blockSize:]
+		} else {
+			blockToDecrypt = i
+			i = nil
+		}
+		decryptedBlock, err := rsa.DecryptPKCS1v15(rand.Reader, priv, blockToDecrypt)
+		if err != nil {
+			return nil, err
+		}
+		decrypted = append(decrypted, decryptedBlock...)
+	}
+
+	return decrypted, nil
+}
 func (p *Parser) DecodePkcs8(input []byte) (output []byte, err error) {
 	ciphertext, err := base64.StdEncoding.DecodeString(string(input))
 	if err != nil {
@@ -75,8 +93,32 @@ func (p *Parser) DecodePkcs8(input []byte) (output []byte, err error) {
 	if err != nil {
 		return nil, err
 	}
-	// 解密
-	return rsa.DecryptPKCS1v15(rand.Reader, priv.(*rsa.PrivateKey), ciphertext)
+
+	// 计算每个块的大小
+	keySize := priv.(*rsa.PrivateKey).Public().(*rsa.PublicKey).N.BitLen() / 8
+	var plaintext []byte
+
+	// 分割数据并解密
+	for len(ciphertext) > 0 {
+		var chunk []byte
+		if len(ciphertext) > keySize {
+			chunk = ciphertext[:keySize]
+			ciphertext = ciphertext[keySize:]
+		} else {
+			chunk = ciphertext
+			ciphertext = nil
+		}
+
+		// 解密
+		decrypted, err := rsa.DecryptPKCS1v15(rand.Reader, priv.(*rsa.PrivateKey), chunk)
+		if err != nil {
+			return nil, err
+		}
+
+		plaintext = append(plaintext, decrypted...)
+	}
+
+	return plaintext, nil
 }
 
 func NewParser(publicKey, privateKey string) *Parser {
