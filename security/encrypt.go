@@ -40,6 +40,25 @@ func (p *Parser) Encode(input []byte) (output []byte, err error) {
 	return []byte(hex.EncodeToString(o)), nil
 }
 
+func (p *Parser) EncodeParsePKIXPublicKey(input []byte) (output []byte, err error) {
+	//解密 pem 格式的公钥
+	block, _ := pem.Decode([]byte(p.publicKey))
+	if block == nil {
+		return nil, errors.New("public key error")
+	}
+	// 解析公钥
+	publicKey, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	//加密
+	o, err := rsa.EncryptPKCS1v15(rand.Reader, publicKey.(*rsa.PublicKey), []byte(input))
+	if err != nil {
+		return nil, err
+	}
+	return []byte(hex.EncodeToString(o)), nil
+}
+
 func (p *Parser) Decode(input []byte) (output []byte, err error) {
 	//解密
 	block, _ := pem.Decode([]byte(p.privateKey))
